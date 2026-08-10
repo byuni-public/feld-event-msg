@@ -35,7 +35,8 @@ async function msgRefreshAdminToken({
   );
 
 
-  const msgRefreshData = await msgRefreshResponse.json();
+  const msgRefreshData =
+    await msgRefreshResponse.json();
 
 
   if (!msgRefreshResponse.ok) {
@@ -61,9 +62,9 @@ async function msgRefreshAdminToken({
   }
 
 
-  /* ======================================
-     새 토큰을 Supabase에 바로 저장
-  ====================================== */
+  /* ===============================
+     새 토큰 DB 저장
+  =============================== */
 
   const {
     error: msgTokenUpdateError
@@ -104,7 +105,7 @@ async function msgRefreshAdminToken({
 
 
 /* =========================================================
-   msg - 쿠폰 발급 함수
+   msg - Cafe24 쿠폰 발급 함수
 ========================================================= */
 
 async function msgIssueCoupon({
@@ -132,10 +133,13 @@ async function msgIssueCoupon({
       },
 
       body: JSON.stringify({
-        issues: {
+        request: {
           shop_no: msgShopNo,
+          issued_member_scope: 'M',
           member_id: msgMemberId,
-          allow_duplication: 'F'
+          allow_duplication: 'F',
+          single_issue_per_once: 'T',
+          send_sms_for_issue: 'F'
         }
       })
     }
@@ -411,7 +415,7 @@ export default async function handler(
 
 
     /* =====================================================
-       8. 기존 이벤트 참여 조회
+       8. 기존 참여 여부 조회
     ===================================================== */
 
     const {
@@ -452,7 +456,7 @@ export default async function handler(
 
 
     /* =====================================================
-       9. 이미 참여한 회원
+       9. 이미 참여한 회원 차단
     ===================================================== */
 
     if (msgExistingParticipant) {
@@ -468,7 +472,7 @@ export default async function handler(
 
 
     /* =====================================================
-       10. 최초 참여 기록
+       10. 최초 참여 기록 생성
     ===================================================== */
 
     const {
@@ -509,9 +513,8 @@ export default async function handler(
     if (msgInsertError) {
 
       /*
-       * 동시에 두 번 눌러도
-       * UNIQUE(event_code, member_id)
-       * 제약조건에서 다시 차단
+       * 동시에 여러 요청이 들어와도
+       * UNIQUE(event_code, member_id)로 최종 차단
        */
 
       if (
@@ -544,7 +547,7 @@ export default async function handler(
 
 
     /* =====================================================
-       11. Cafe24 관리자 토큰 DB 조회
+       11. Cafe24 관리자 토큰 조회
     ===================================================== */
 
     const {
@@ -608,19 +611,13 @@ export default async function handler(
 
 
     /* =====================================================
-       12. 현재 사용할 관리자 Access Token 결정
+       12. 현재 사용할 관리자 Access Token
     ===================================================== */
 
     let msgAdminAccessToken =
       msgCafe24Token.access_token;
 
 
-
-    /*
-     * DB에 저장된 expires_at을 먼저 확인합니다.
-     *
-     * 만료 5분 전부터 미리 Refresh 합니다.
-     */
 
     const msgExpiresAt =
       msgCafe24Token
@@ -738,7 +735,7 @@ export default async function handler(
 
 
     /* =====================================================
-       15. 그래도 401이면 토큰 강제 갱신 후 1회 재시도
+       15. 401이면 관리자 토큰 강제 갱신 후 재시도
     ===================================================== */
 
     if (
@@ -751,15 +748,6 @@ export default async function handler(
 
 
       try {
-
-        /*
-         * 중요한 점:
-         *
-         * 앞에서 이미 Refresh했다면 그 과정에서
-         * Refresh Token도 새로 발급됐습니다.
-         *
-         * 따라서 Supabase에서 최신 토큰을 다시 읽습니다.
-         */
 
         const {
           data: msgLatestToken,
@@ -809,10 +797,6 @@ export default async function handler(
           msgRefreshedToken.access_token;
 
 
-
-        /*
-         * 새 Access Token으로 쿠폰 발급 재시도
-         */
 
         const msgRetryResult =
           await msgIssueCoupon({
@@ -977,11 +961,6 @@ export default async function handler(
         msgUpdateError
       );
 
-
-      /*
-       * 이 경우 쿠폰 자체는 이미 발급됐습니다.
-       * 따라서 재발급하면 안 됩니다.
-       */
 
       return msgRes.status(500).json({
         success: false,
