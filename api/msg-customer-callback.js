@@ -80,7 +80,7 @@ export default async function handler(msgReq, msgRes) {
 
     const msgTokenData =
       await msgTokenResponse.json();
-
+      
       console.log('msg customer token info:', {
         mall_id: msgTokenData.mall_id || null,
         user_id: msgTokenData.user_id || null,
@@ -96,14 +96,12 @@ export default async function handler(msgReq, msgRes) {
         msgTokenData
       );
 
-      return msgRes.status(200).json({
-        success: true,
-        message: '회원 정보 확인 성공',
-        member_test: {
-            user_id: msgTokenData.user_id || null,
-            member_id: msgTokenData.member_id || null,
-            user_identifier: msgUserIdentifier
-        }
+      return msgRes
+        .status(msgTokenResponse.status)
+        .json({
+          success: false,
+          code: 'TOKEN_ERROR',
+          message: '회원 Access Token 발급 실패'
         });
     }
 
@@ -294,11 +292,17 @@ export default async function handler(msgReq, msgRes) {
     =============================== */
 
     return msgRes.status(200).json({
-      success: true,
-      code: 'PARTICIPATION_READY',
-      message: '이벤트 참여가 가능합니다.',
-      participant_id: msgNewParticipant.id,
-      shop_no: msgShopNo
+    success: true,
+    code: 'PARTICIPATION_READY',
+    message: '이벤트 참여가 가능합니다.',
+
+    participant_id: msgNewParticipant.id,
+    shop_no: msgShopNo,
+
+    msg_test: {
+        member_id: msgTokenData.user_id || null,
+        user_identifier: msgUserIdentifier
+    }
     });
 
 
