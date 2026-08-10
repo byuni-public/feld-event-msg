@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 
 /* =========================================================
-   msg - Cafe24 관리자 Access Token 갱신 함수
+   msg - Cafe24 관리자 Access Token 갱신
 ========================================================= */
 
 async function msgRefreshAdminToken({
@@ -12,6 +12,7 @@ async function msgRefreshAdminToken({
   msgRefreshToken,
   msgSupabase
 }) {
+
   const msgBasicAuth = Buffer.from(
     `${msgClientId}:${msgClientSecret}`
   ).toString('base64');
@@ -40,12 +41,15 @@ async function msgRefreshAdminToken({
 
 
   if (!msgRefreshResponse.ok) {
+
     console.error(
       'msg admin token refresh error:',
       msgRefreshData
     );
 
-    throw new Error('ADMIN_TOKEN_REFRESH_FAILED');
+    throw new Error(
+      'ADMIN_TOKEN_REFRESH_FAILED'
+    );
   }
 
 
@@ -53,24 +57,28 @@ async function msgRefreshAdminToken({
     !msgRefreshData.access_token ||
     !msgRefreshData.refresh_token
   ) {
+
     console.error(
-      'msg admin token refresh invalid response:',
+      'msg admin token refresh invalid:',
       msgRefreshData
     );
 
-    throw new Error('ADMIN_TOKEN_REFRESH_INVALID');
+    throw new Error(
+      'ADMIN_TOKEN_REFRESH_INVALID'
+    );
   }
 
 
-  /* ===============================
-     새 토큰 DB 저장
-  =============================== */
+  /* =====================================================
+     새 토큰 Supabase 저장
+  ===================================================== */
 
   const {
     error: msgTokenUpdateError
   } = await msgSupabase
     .from('cafe24_tokens')
     .update({
+
       access_token:
         msgRefreshData.access_token,
 
@@ -85,17 +93,24 @@ async function msgRefreshAdminToken({
 
       updated_at:
         new Date().toISOString()
+
     })
-    .eq('mall_id', msgMallId);
+    .eq(
+      'mall_id',
+      msgMallId
+    );
 
 
   if (msgTokenUpdateError) {
+
     console.error(
-      'msg refreshed token DB update error:',
+      'msg token DB update error:',
       msgTokenUpdateError
     );
 
-    throw new Error('ADMIN_TOKEN_DB_UPDATE_FAILED');
+    throw new Error(
+      'ADMIN_TOKEN_DB_UPDATE_FAILED'
+    );
   }
 
 
@@ -105,7 +120,7 @@ async function msgRefreshAdminToken({
 
 
 /* =========================================================
-   msg - Cafe24 쿠폰 발급 함수
+   msg - Cafe24 쿠폰 발급
 ========================================================= */
 
 async function msgIssueCoupon({
@@ -117,11 +132,14 @@ async function msgIssueCoupon({
 }) {
 
   const msgCouponResponse = await fetch(
+
     `https://${msgMallId}.cafe24api.com/api/v2/admin/coupons/${msgCouponNo}/issues`,
+
     {
       method: 'POST',
 
       headers: {
+
         Authorization:
           `Bearer ${msgAccessToken}`,
 
@@ -133,13 +151,26 @@ async function msgIssueCoupon({
       },
 
       body: JSON.stringify({
+
         request: {
-          shop_no: msgShopNo,
-          issued_member_scope: 'M',
-          member_id: msgMemberId,
-          allow_duplication: 'F',
-          single_issue_per_once: 'T',
-          send_sms_for_issue: 'F'
+
+          shop_no:
+            msgShopNo,
+
+          issued_member_scope:
+            'M',
+
+          member_id:
+            msgMemberId,
+
+          allow_duplication:
+            'F',
+
+          single_issue_per_once:
+            'T',
+
+          send_sms_for_issue:
+            'F'
         }
       })
     }
@@ -148,10 +179,14 @@ async function msgIssueCoupon({
 
   let msgCouponData;
 
+
   try {
+
     msgCouponData =
       await msgCouponResponse.json();
+
   } catch {
+
     msgCouponData = {};
   }
 
@@ -165,7 +200,7 @@ async function msgIssueCoupon({
 
 
 /* =========================================================
-   메인 Callback
+   msg - 메인 Customer OAuth Callback
 ========================================================= */
 
 export default async function handler(
@@ -176,7 +211,7 @@ export default async function handler(
   try {
 
     /* =====================================================
-       1. 회원 인증 코드 확인
+       1. 인증 코드
     ===================================================== */
 
     const msgCode =
@@ -184,10 +219,16 @@ export default async function handler(
 
 
     if (!msgCode) {
+
       return msgRes.status(400).json({
+
         success: false,
-        code: 'NO_AUTH_CODE',
-        message: '회원 인증 코드가 없습니다.'
+
+        code:
+          'NO_AUTH_CODE',
+
+        message:
+          '회원 인증 코드가 없습니다.'
       });
     }
 
@@ -200,20 +241,26 @@ export default async function handler(
     const msgClientId =
       process.env.CAFE24_CLIENT_ID;
 
+
     const msgClientSecret =
       process.env.CAFE24_CLIENT_SECRET;
+
 
     const msgRedirectUri =
       process.env.CAFE24_CUSTOMER_REDIRECT_URI;
 
+
     const msgMallId =
       process.env.CAFE24_MALL_ID;
+
 
     const msgSupabaseUrl =
       process.env.SUPABASE_URL;
 
+
     const msgSupabaseSecretKey =
       process.env.SUPABASE_SECRET_KEY;
+
 
 
     if (
@@ -226,8 +273,12 @@ export default async function handler(
     ) {
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'ENV_ERROR',
+
+        code:
+          'ENV_ERROR',
+
         message:
           '서버 환경변수가 부족합니다.'
       });
@@ -236,17 +287,24 @@ export default async function handler(
 
 
     /* =====================================================
-       3. Supabase 연결
+       3. Supabase
     ===================================================== */
 
     const msgSupabase =
       createClient(
+
         msgSupabaseUrl,
+
         msgSupabaseSecretKey,
+
         {
           auth: {
-            persistSession: false,
-            autoRefreshToken: false
+
+            persistSession:
+              false,
+
+            autoRefreshToken:
+              false
           }
         }
       );
@@ -254,7 +312,7 @@ export default async function handler(
 
 
     /* =====================================================
-       4. 고객 Access Token 발급
+       4. Customer Access Token
     ===================================================== */
 
     const msgCustomerBasicAuth =
@@ -263,13 +321,17 @@ export default async function handler(
       ).toString('base64');
 
 
+
     const msgTokenResponse =
       await fetch(
+
         'https://feld.co.kr/api/v2/oauth/token',
+
         {
           method: 'POST',
 
           headers: {
+
             Authorization:
               `Basic ${msgCustomerBasicAuth}`,
 
@@ -278,6 +340,7 @@ export default async function handler(
           },
 
           body: new URLSearchParams({
+
             grant_type:
               'authorization_code',
 
@@ -291,8 +354,10 @@ export default async function handler(
       );
 
 
+
     const msgTokenData =
       await msgTokenResponse.json();
+
 
 
     if (!msgTokenResponse.ok) {
@@ -304,10 +369,16 @@ export default async function handler(
 
 
       return msgRes
-        .status(msgTokenResponse.status)
+        .status(
+          msgTokenResponse.status
+        )
         .json({
+
           success: false,
-          code: 'CUSTOMER_TOKEN_ERROR',
+
+          code:
+            'CUSTOMER_TOKEN_ERROR',
+
           message:
             '회원 인증에 실패했습니다.'
         });
@@ -323,11 +394,16 @@ export default async function handler(
       msgTokenData.user_id;
 
 
+
     if (!msgMemberId) {
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'NO_MEMBER_ID',
+
+        code:
+          'NO_MEMBER_ID',
+
         message:
           '회원 ID를 확인할 수 없습니다.'
       });
@@ -336,16 +412,19 @@ export default async function handler(
 
 
     /* =====================================================
-       6. 회원 고유 식별자 조회
+       6. 회원 고유 식별자
     ===================================================== */
 
     const msgIdentifierResponse =
       await fetch(
+
         'https://feld.co.kr/api/v2/customers/identifier',
+
         {
           method: 'GET',
 
           headers: {
+
             Authorization:
               `Basic ${msgTokenData.access_token}`
           }
@@ -353,23 +432,31 @@ export default async function handler(
       );
 
 
+
     const msgIdentifierData =
       await msgIdentifierResponse.json();
+
 
 
     if (!msgIdentifierResponse.ok) {
 
       console.error(
-        'msg customer identifier error:',
+        'msg identifier error:',
         msgIdentifierData
       );
 
 
       return msgRes
-        .status(msgIdentifierResponse.status)
+        .status(
+          msgIdentifierResponse.status
+        )
         .json({
+
           success: false,
-          code: 'IDENTIFIER_ERROR',
+
+          code:
+            'IDENTIFIER_ERROR',
+
           message:
             '회원 식별자 조회에 실패했습니다.'
         });
@@ -389,11 +476,16 @@ export default async function handler(
         ?.shop_no || 1;
 
 
+
     if (!msgUserIdentifier) {
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'NO_IDENTIFIER',
+
+        code:
+          'NO_IDENTIFIER',
+
         message:
           '회원 고유 식별자를 확인할 수 없습니다.'
       });
@@ -403,28 +495,42 @@ export default async function handler(
 
     /* =====================================================
        7. 이벤트 설정
+
+       현재 테스트:
+       GREAT_LUCK = 대길
+       첫 번째 테스트 쿠폰 사용
     ===================================================== */
 
     const msgEventCode =
       'feld_chuseok_2026';
 
 
+    const msgResultCode =
+      'GREAT_LUCK';
+
+
     const msgCouponNo =
       '6085943114800000356';
 
 
+    const msgEventPageUrl =
+      'https://feld.co.kr/26chuseok.html';
+
+
 
     /* =====================================================
-       8. 기존 참여 여부 조회
+       8. 기존 참여 여부
     ===================================================== */
 
     const {
       data: msgExistingParticipant,
       error: msgSelectError
     } = await msgSupabase
-      .from('msg_event_participants')
+      .from(
+        'msg_event_participants'
+      )
       .select(
-        'id, event_code, status, coupon_no, participated_at'
+        'id, event_code, status, coupon_no, result_code, participated_at'
       )
       .eq(
         'event_code',
@@ -437,6 +543,7 @@ export default async function handler(
       .maybeSingle();
 
 
+
     if (msgSelectError) {
 
       console.error(
@@ -446,8 +553,12 @@ export default async function handler(
 
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'DB_SELECT_ERROR',
+
+        code:
+          'DB_SELECT_ERROR',
+
         message:
           '참여 여부 확인 중 오류가 발생했습니다.'
       });
@@ -456,28 +567,34 @@ export default async function handler(
 
 
     /* =====================================================
-       9. 이미 참여한 회원 차단
+       9. 이미 참여
     ===================================================== */
 
     if (msgExistingParticipant) {
 
-    return msgRes.redirect(
+      return msgRes.redirect(
+
         302,
-        'https://feld.co.kr/26chuseok.html?msg_status=already'
-    );
+
+        `${msgEventPageUrl}?msg_status=already`
+      );
     }
 
 
 
     /* =====================================================
-       10. 최초 참여 기록 생성
+       10. 참여 기록 생성
     ===================================================== */
 
     const {
       data: msgNewParticipant,
       error: msgInsertError
     } = await msgSupabase
-      .from('msg_event_participants')
+
+      .from(
+        'msg_event_participants'
+      )
+
       .insert({
 
         event_code:
@@ -487,7 +604,7 @@ export default async function handler(
           msgUserIdentifier,
 
         result_code:
-          'TEST_COUPON',
+          msgResultCode,
 
         coupon_no:
           msgCouponNo,
@@ -501,9 +618,11 @@ export default async function handler(
         updated_at:
           new Date().toISOString()
       })
+
       .select(
         'id, status'
       )
+
       .single();
 
 
@@ -511,21 +630,20 @@ export default async function handler(
     if (msgInsertError) {
 
       /*
-       * 동시에 여러 요청이 들어와도
-       * UNIQUE(event_code, member_id)로 최종 차단
+       * 중복 UNIQUE 에러
        */
 
       if (
         msgInsertError.code === '23505'
       ) {
 
-        if (msgExistingParticipant) {
-
         return msgRes.redirect(
-            302,
-            'https://feld.co.kr/26chuseok.html?msg_status=already'
+
+          302,
+
+          `${msgEventPageUrl}?msg_status=already`
         );
-        }
+      }
 
 
       console.error(
@@ -535,8 +653,12 @@ export default async function handler(
 
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'DB_INSERT_ERROR',
+
+        code:
+          'DB_INSERT_ERROR',
+
         message:
           '참여 정보 저장 중 오류가 발생했습니다.'
       });
@@ -545,26 +667,32 @@ export default async function handler(
 
 
     /* =====================================================
-       11. Cafe24 관리자 토큰 조회
+       11. 관리자 토큰 조회
     ===================================================== */
 
     const {
       data: msgCafe24Token,
       error: msgTokenDbError
     } = await msgSupabase
-      .from('cafe24_tokens')
+
+      .from(
+        'cafe24_tokens'
+      )
+
       .select(
         `
-          access_token,
-          refresh_token,
-          access_token_expires_at,
-          refresh_token_expires_at
+        access_token,
+        refresh_token,
+        access_token_expires_at,
+        refresh_token_expires_at
         `
       )
+
       .eq(
         'mall_id',
         msgMallId
       )
+
       .single();
 
 
@@ -581,8 +709,13 @@ export default async function handler(
 
 
       await msgSupabase
-        .from('msg_event_participants')
+
+        .from(
+          'msg_event_participants'
+        )
+
         .update({
+
           status:
             'FAILED',
 
@@ -592,6 +725,7 @@ export default async function handler(
           updated_at:
             new Date().toISOString()
         })
+
         .eq(
           'id',
           msgNewParticipant.id
@@ -599,8 +733,12 @@ export default async function handler(
 
 
       return msgRes.status(500).json({
+
         success: false,
-        code: 'ADMIN_TOKEN_ERROR',
+
+        code:
+          'ADMIN_TOKEN_ERROR',
+
         message:
           '카페24 관리자 인증정보를 확인할 수 없습니다.'
       });
@@ -609,21 +747,22 @@ export default async function handler(
 
 
     /* =====================================================
-       12. 현재 사용할 관리자 Access Token
+       12. Access Token 만료 확인
     ===================================================== */
 
     let msgAdminAccessToken =
       msgCafe24Token.access_token;
 
 
-
     const msgExpiresAt =
       msgCafe24Token
         .access_token_expires_at
+
         ? new Date(
             msgCafe24Token
               .access_token_expires_at
           ).getTime()
+
         : null;
 
 
@@ -643,7 +782,7 @@ export default async function handler(
 
 
     /* =====================================================
-       13. 필요하면 관리자 토큰 자동 갱신
+       13. 필요하면 토큰 갱신
     ===================================================== */
 
     if (msgShouldRefresh) {
@@ -673,14 +812,19 @@ export default async function handler(
       } catch (msgRefreshError) {
 
         console.error(
-          'msg refresh process error:',
+          'msg refresh error:',
           msgRefreshError
         );
 
 
         await msgSupabase
-          .from('msg_event_participants')
+
+          .from(
+            'msg_event_participants'
+          )
+
           .update({
+
             status:
               'FAILED',
 
@@ -690,6 +834,7 @@ export default async function handler(
             updated_at:
               new Date().toISOString()
           })
+
           .eq(
             'id',
             msgNewParticipant.id
@@ -697,12 +842,14 @@ export default async function handler(
 
 
         return msgRes.status(401).json({
+
           success: false,
+
           code:
             'ADMIN_TOKEN_REFRESH_ERROR',
 
           message:
-            '카페24 관리자 인증 갱신에 실패했습니다. 관리자 재인증이 필요할 수 있습니다.'
+            '카페24 관리자 인증 갱신에 실패했습니다.'
         });
       }
     }
@@ -710,7 +857,7 @@ export default async function handler(
 
 
     /* =====================================================
-       14. 쿠폰 발급 1차 시도
+       14. 쿠폰 발급
     ===================================================== */
 
     let {
@@ -733,17 +880,12 @@ export default async function handler(
 
 
     /* =====================================================
-       15. 401이면 관리자 토큰 강제 갱신 후 재시도
+       15. 401이면 Refresh 후 한 번 재시도
     ===================================================== */
 
     if (
       msgCouponResponse.status === 401
     ) {
-
-      console.log(
-        'msg coupon API 401 - refreshing admin token'
-      );
-
 
       try {
 
@@ -751,15 +893,22 @@ export default async function handler(
           data: msgLatestToken,
           error: msgLatestTokenError
         } = await msgSupabase
-          .from('cafe24_tokens')
+
+          .from(
+            'cafe24_tokens'
+          )
+
           .select(
             'refresh_token'
           )
+
           .eq(
             'mall_id',
             msgMallId
           )
+
           .single();
+
 
 
         if (
@@ -791,6 +940,7 @@ export default async function handler(
           });
 
 
+
         msgAdminAccessToken =
           msgRefreshedToken.access_token;
 
@@ -812,8 +962,10 @@ export default async function handler(
           });
 
 
+
         msgCouponResponse =
           msgRetryResult.msgCouponResponse;
+
 
         msgCouponData =
           msgRetryResult.msgCouponData;
@@ -822,13 +974,17 @@ export default async function handler(
       } catch (msgRetryError) {
 
         console.error(
-          'msg coupon retry refresh error:',
+          'msg coupon retry error:',
           msgRetryError
         );
 
 
         await msgSupabase
-          .from('msg_event_participants')
+
+          .from(
+            'msg_event_participants'
+          )
+
           .update({
 
             status:
@@ -843,6 +999,7 @@ export default async function handler(
             updated_at:
               new Date().toISOString()
           })
+
           .eq(
             'id',
             msgNewParticipant.id
@@ -850,12 +1007,14 @@ export default async function handler(
 
 
         return msgRes.status(401).json({
+
           success: false,
+
           code:
             'ADMIN_TOKEN_REFRESH_ERROR',
 
           message:
-            '카페24 관리자 인증 갱신에 실패했습니다. 관리자 재인증이 필요합니다.'
+            '카페24 관리자 인증 갱신에 실패했습니다.'
         });
       }
     }
@@ -863,19 +1022,23 @@ export default async function handler(
 
 
     /* =====================================================
-       16. 최종 쿠폰 발급 실패
+       16. 쿠폰 최종 실패
     ===================================================== */
 
     if (!msgCouponResponse.ok) {
 
       console.error(
-        'msg cafe24 coupon issue error:',
+        'msg cafe24 coupon error:',
         msgCouponData
       );
 
 
       await msgSupabase
-        .from('msg_event_participants')
+
+        .from(
+          'msg_event_participants'
+        )
+
         .update({
 
           status:
@@ -885,7 +1048,7 @@ export default async function handler(
             msgCouponNo,
 
           result_code:
-            'TEST_COUPON',
+            msgResultCode,
 
           error_message:
             JSON.stringify(
@@ -895,6 +1058,7 @@ export default async function handler(
           updated_at:
             new Date().toISOString()
         })
+
         .eq(
           'id',
           msgNewParticipant.id
@@ -906,7 +1070,9 @@ export default async function handler(
           msgCouponResponse.status
         )
         .json({
+
           success: false,
+
           code:
             'COUPON_ISSUE_ERROR',
 
@@ -921,13 +1087,17 @@ export default async function handler(
 
 
     /* =====================================================
-       17. 쿠폰 발급 성공 → 참여 기록 완료
+       17. 쿠폰 성공 → DB 완료
     ===================================================== */
 
     const {
       error: msgUpdateError
     } = await msgSupabase
-      .from('msg_event_participants')
+
+      .from(
+        'msg_event_participants'
+      )
+
       .update({
 
         status:
@@ -937,7 +1107,7 @@ export default async function handler(
           msgCouponNo,
 
         result_code:
-          'TEST_COUPON',
+          msgResultCode,
 
         error_message:
           null,
@@ -945,6 +1115,7 @@ export default async function handler(
         updated_at:
           new Date().toISOString()
       })
+
       .eq(
         'id',
         msgNewParticipant.id
@@ -961,7 +1132,9 @@ export default async function handler(
 
 
       return msgRes.status(500).json({
+
         success: false,
+
         code:
           'DB_UPDATE_ERROR',
 
@@ -973,22 +1146,18 @@ export default async function handler(
 
 
     /* =====================================================
-       18. 최종 성공
+       18. 성공 → 이벤트 페이지로 복귀
     ===================================================== */
-
-    /* =====================================================
-    최종 성공 → 이벤트 페이지로 이동
-    ===================================================== */
-
-    const msgEventPageUrl =
-    'https://feld.co.kr/26chuseok.html';
-
 
     return msgRes.redirect(
-    302,
-    `${msgEventPageUrl}` +
-    `?msg_status=success` +
-    `&msg_result=${encodeURIComponent(msgResultCode)}`
+
+      302,
+
+      `${msgEventPageUrl}` +
+      `?msg_status=success` +
+      `&msg_result=${encodeURIComponent(
+        msgResultCode
+      )}`
     );
 
 
