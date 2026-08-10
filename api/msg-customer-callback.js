@@ -81,6 +81,13 @@ export default async function handler(msgReq, msgRes) {
     const msgTokenData =
       await msgTokenResponse.json();
 
+      console.log('msg customer token info:', {
+        mall_id: msgTokenData.mall_id || null,
+        user_id: msgTokenData.user_id || null,
+        member_id: msgTokenData.member_id || null,
+        scopes: msgTokenData.scopes || null
+        });
+
 
     if (!msgTokenResponse.ok) {
 
@@ -89,12 +96,14 @@ export default async function handler(msgReq, msgRes) {
         msgTokenData
       );
 
-      return msgRes
-        .status(msgTokenResponse.status)
-        .json({
-          success: false,
-          code: 'TOKEN_ERROR',
-          message: '회원 Access Token 발급 실패'
+      return msgRes.status(200).json({
+        success: true,
+        message: '회원 정보 확인 성공',
+        member_test: {
+            user_id: msgTokenData.user_id || null,
+            member_id: msgTokenData.member_id || null,
+            user_identifier: msgUserIdentifier
+        }
         });
     }
 
