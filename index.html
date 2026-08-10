@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Feld Event App</title>
+</head>
+<body>
+    <h1>Feld Event App</h1>
+    <p>카페24 앱 실행 확인 완료</p>
+
+    <script>
+        const msgParams = new URLSearchParams(window.location.search);
+
+        console.log('msg mall_id:', msgParams.get('mall_id'));
+        console.log('msg shop_no:', msgParams.get('shop_no'));
+        console.log('msg user_id:', msgParams.get('user_id'));
+        console.log('msg user_type:', msgParams.get('user_type'));
+        console.log('msg hmac:', msgParams.get('hmac'));
+    </script>
+</body>
+</html>
