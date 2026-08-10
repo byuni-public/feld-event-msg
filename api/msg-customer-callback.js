@@ -461,12 +461,10 @@ export default async function handler(
 
     if (msgExistingParticipant) {
 
-      return msgRes.status(200).json({
-        success: false,
-        code: 'ALREADY_PARTICIPATED',
-        message:
-          '이미 참여하셨습니다.'
-      });
+    return msgRes.redirect(
+        302,
+        'https://feld.co.kr/26chuseok.html?msg_status=already'
+    );
     }
 
 
@@ -521,13 +519,13 @@ export default async function handler(
         msgInsertError.code === '23505'
       ) {
 
-        return msgRes.status(200).json({
-          success: false,
-          code: 'ALREADY_PARTICIPATED',
-          message:
-            '이미 참여하셨습니다.'
-        });
-      }
+        if (msgExistingParticipant) {
+
+        return msgRes.redirect(
+            302,
+            'https://feld.co.kr/26chuseok.html?msg_status=already'
+        );
+        }
 
 
       console.error(
@@ -978,19 +976,20 @@ export default async function handler(
        18. 최종 성공
     ===================================================== */
 
-    return msgRes.status(200).json({
+    /* =====================================================
+    최종 성공 → 이벤트 페이지로 이동
+    ===================================================== */
 
-      success: true,
+    const msgEventPageUrl =
+    'https://feld.co.kr/26chuseok.html';
 
-      code:
-        'COUPON_ISSUED',
 
-      message:
-        '쿠폰이 발급되었습니다.',
-
-      coupon_no:
-        msgCouponNo
-    });
+    return msgRes.redirect(
+    302,
+    `${msgEventPageUrl}` +
+    `?msg_status=success` +
+    `&msg_result=${encodeURIComponent(msgResultCode)}`
+    );
 
 
 
