@@ -770,15 +770,93 @@ export default async function handler(
 
 
 
-    if (msgExistingParticipant) {
+/* =====================================================
+   msg - 이미 참여한 회원
 
-      return msgRes.redirect(
+   쿠폰은 추가 발급하지 않지만
+   이번에 선택한 패의 결과는 보여줍니다.
+===================================================== */
 
-        302,
+if (msgExistingParticipant) {
 
-        `${msgEventPageUrl}?msg_status=already`
-      );
-    }
+  /* ===============================
+     이번 선택 카드로 족보 계산
+  =============================== */
+
+  const msgAlreadyResult =
+    msgGetCardResult(
+      msgSelection.card_1,
+      msgSelection.card_2
+    );
+
+
+  /* ===============================
+     이번 selection 사용 완료 처리
+  =============================== */
+
+  await msgSupabase
+
+    .from('msg_event_selections')
+
+    .update({
+      used: true
+    })
+
+    .eq(
+      'selection_id',
+      msgSelectionId
+    );
+
+
+  /* ===============================
+     이벤트페이지 복귀 URL
+  =============================== */
+
+  const msgAlreadyRedirectUrl =
+    new URL(
+      msgEventPageUrl
+    );
+
+
+  msgAlreadyRedirectUrl.searchParams.set(
+    'msg_status',
+    'already'
+  );
+
+
+  msgAlreadyRedirectUrl.searchParams.set(
+    'msg_result',
+    msgAlreadyResult.code
+  );
+
+
+  msgAlreadyRedirectUrl.searchParams.set(
+    'msg_result_name',
+    msgAlreadyResult.name
+  );
+
+
+  msgAlreadyRedirectUrl.searchParams.set(
+    'msg_card1',
+    String(
+      msgSelection.card_1
+    )
+  );
+
+
+  msgAlreadyRedirectUrl.searchParams.set(
+    'msg_card2',
+    String(
+      msgSelection.card_2
+    )
+  );
+
+
+  return msgRes.redirect(
+    302,
+    msgAlreadyRedirectUrl.toString()
+  );
+}
 
 
 
