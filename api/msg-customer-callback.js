@@ -1395,14 +1395,14 @@ export default async function handler(
 
 
     msgRedirectUrl.searchParams.set(
-      'msg_result',
-      msgResultCode
+    'msg_card1',
+    String(msgSelection.card_1)
     );
 
 
     msgRedirectUrl.searchParams.set(
-      'msg_result_name',
-      msgResultName
+    'msg_card2',
+    String(msgSelection.card_2)
     );
 
 
