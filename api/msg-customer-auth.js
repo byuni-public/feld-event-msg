@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 
 /* =========================================================
-   msg - 이벤트 설정
+   msg - 이벤트 기본 설정
 ========================================================= */
 
 const msgEventCode =
@@ -13,10 +13,19 @@ const msgEventPageUrl =
   'https://feld.co.kr/msg/26chuseok.html';
 
 
+/*
+ * Cafe24 Developers에 등록한
+ * Customer OAuth Redirect URI
+ */
+
 const msgCustomerRedirectUri =
   'https://feld-event-msg.vercel.app/api/msg-customer-callback';
 
 
+
+/* =========================================================
+   msg - 메인 Customer OAuth 시작
+========================================================= */
 
 export default async function handler(
   msgReq,
@@ -35,20 +44,27 @@ export default async function handler(
       ).trim();
 
 
-    if (!msgSelectionId) {
-
-      return msgRes.redirect(
-        302,
-        `${msgEventPageUrl}?msg_status=selection_error`
-      );
-    }
-
+    /*
+     * msg-create-selection.js에서
+     *
+     * crypto.randomBytes(24).toString('hex')
+     *
+     * 로 만들기 때문에
+     * 정상 selection_id는 48자리 hex
+     */
 
     if (
+      !msgSelectionId ||
       !/^[a-f0-9]{48}$/i.test(
         msgSelectionId
       )
     ) {
+
+      console.error(
+        'msg invalid selection id:',
+        msgSelectionId
+      );
+
 
       return msgRes.redirect(
         302,
@@ -74,6 +90,7 @@ export default async function handler(
       process.env.SUPABASE_SECRET_KEY;
 
 
+
     if (
       !msgClientId ||
       !msgSupabaseUrl ||
@@ -81,7 +98,17 @@ export default async function handler(
     ) {
 
       console.error(
-        'msg customer auth env error'
+        'msg customer auth env error',
+        {
+          clientId:
+            Boolean(msgClientId),
+
+          supabaseUrl:
+            Boolean(msgSupabaseUrl),
+
+          supabaseSecretKey:
+            Boolean(msgSupabaseSecretKey)
+        }
       );
 
 
@@ -99,19 +126,12 @@ export default async function handler(
 
     const msgSupabase =
       createClient(
-
         msgSupabaseUrl,
-
         msgSupabaseSecretKey,
-
         {
           auth: {
-
-            persistSession:
-              false,
-
-            autoRefreshToken:
-              false
+            persistSession: false,
+            autoRefreshToken: false
           }
         }
       );
@@ -119,7 +139,7 @@ export default async function handler(
 
 
     /* =====================================================
-       4. selection 조회
+       4. selection 실제 존재 여부 확인
     ===================================================== */
 
     const {
@@ -132,7 +152,14 @@ export default async function handler(
       )
 
       .select(
-        'selection_id, event_code, card_1, card_2, used'
+        `
+        selection_id,
+        event_code,
+        card_1,
+        card_2,
+        used,
+        created_at
+        `
       )
 
       .eq(
@@ -149,13 +176,10 @@ export default async function handler(
 
 
 
-    if (
-      msgSelectionError ||
-      !msgSelection
-    ) {
+    if (msgSelectionError) {
 
       console.error(
-        'msg selection auth lookup error:',
+        'msg selection lookup DB error:',
         msgSelectionError
       );
 
@@ -168,11 +192,33 @@ export default async function handler(
 
 
 
+    if (!msgSelection) {
+
+      console.error(
+        'msg selection not found:',
+        msgSelectionId
+      );
+
+
+      return msgRes.redirect(
+        302,
+        `${msgEventPageUrl}?msg_status=selection_error`
+      );
+    }
+
+
+
     /* =====================================================
-       5. 이미 사용된 selection
+       5. 이미 사용된 selection 확인
     ===================================================== */
 
     if (msgSelection.used) {
+
+      console.log(
+        'msg selection already used:',
+        msgSelectionId
+      );
+
 
       return msgRes.redirect(
         302,
@@ -183,81 +229,105 @@ export default async function handler(
 
 
     /* =====================================================
-       6. Cafe24 Customer OAuth 주소 생성
+       6. Cafe24 Customer OAuth URL 생성
+
+       중요:
+       URLSearchParams를 사용하지 않고
+       각 파라미터를 직접 분리해서 만듭니다.
+
+       redirect_uri는 반드시 마지막에 둡니다.
     ===================================================== */
 
     const msgAuthorizeUrl =
-      new URL(
-        'https://feld.co.kr/api/v2/oauth/authorize'
+
+      'https://feld.co.kr/api/v2/oauth/authorize' +
+
+      '?response_type=code' +
+
+      '&client_id=' +
+      encodeURIComponent(
+        msgClientId
+      ) +
+
+      '&scope=' +
+      encodeURIComponent(
+        'mall.read_customer_identifier'
+      ) +
+
+      '&state=' +
+      encodeURIComponent(
+        msgSelectionId
+      ) +
+
+      '&redirect_uri=' +
+      encodeURIComponent(
+        msgCustomerRedirectUri
       );
 
 
-    msgAuthorizeUrl.searchParams.set(
-      'response_type',
-      'code'
+
+    /* =====================================================
+       7. 디버깅 로그
+
+       정상이라면 Vercel 로그에서:
+
+       &scope=...
+       &state=...
+       &redirect_uri=...
+
+       이렇게 각각 분리되어 보여야 합니다.
+    ===================================================== */
+
+    console.log(
+      'msg ========================================'
     );
 
 
-    msgAuthorizeUrl.searchParams.set(
-      'client_id',
-      msgClientId
+    console.log(
+      'msg CUSTOMER OAUTH START'
     );
 
 
-    /*
-     * 중요:
-     * Cafe24 Developers에 등록된 URI와
-     * 반드시 완전히 동일해야 합니다.
-     */
-
-    msgAuthorizeUrl.searchParams.set(
-      'redirect_uri',
-      msgCustomerRedirectUri
-    );
-
-
-    msgAuthorizeUrl.searchParams.set(
-      'scope',
-      'mall.read_customer_identifier'
-    );
-
-
-    /*
-     * 선택정보를 OAuth 이후에도
-     * 유지하기 위해 selection_id를 state로 전달
-     */
-
-    msgAuthorizeUrl.searchParams.set(
-      'state',
+    console.log(
+      'msg selection id:',
       msgSelectionId
     );
 
 
-
     console.log(
-      'msg customer oauth redirect uri:',
-      msgCustomerRedirectUri
+      'msg selected cards:',
+      msgSelection.card_1,
+      msgSelection.card_2
     );
 
 
-    /* =====================================================
-       7. Cafe24 회원 인증으로 이동
-    ===================================================== */
+    console.log(
+      'msg customer redirect uri:',
+      msgCustomerRedirectUri
+    );
+
 
     console.log(
       'msg FINAL AUTHORIZE URL:',
-      msgAuthorizeUrl.toString()
+      msgAuthorizeUrl
     );
 
+
     console.log(
-      'msg FINAL REDIRECT URI:',
-      msgCustomerRedirectUri
+      'msg ========================================'
     );
+
+
+
+    /* =====================================================
+       8. Cafe24 회원 로그인 / OAuth 페이지 이동
+    ===================================================== */
 
     return msgRes.redirect(
       302,
-      msgAuthorizeUrl.toString()
+      msgAuthorizeUrl
     );
+
 
 
   } catch (msgError) {
