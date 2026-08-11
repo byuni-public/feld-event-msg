@@ -690,7 +690,7 @@ export default async function handler(
 
 
     const msgRedirectUri =
-      process.env.CAFE24_CUSTOMER_REDIRECT_URI;
+     'https://feld-event-msg.vercel.app/api/msg-customer-callback';
 
 
     const msgMallId =
