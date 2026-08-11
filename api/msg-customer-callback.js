@@ -13,17 +13,303 @@ const msgEventPageUrl =
   'https://feld.co.kr/msg/26chuseok.html';
 
 
+/*
+ * 현재 테스트용 공통 쿠폰
+ *
+ * 나중에 아래 msgResultSettings에서
+ * 족보마다 다른 couponNo를 넣으면 됩니다.
+ */
+
+const msgDefaultCouponNo =
+  '6085943114800000356';
+
+
 
 /* =========================================================
-   msg - 카드 조합 결과 결정
+   msg - 45개 전체 족보 조합
+========================================================= */
 
-   현재는 테스트 규칙입니다.
+const msgCombinationMap = {
 
-   3 + 8
-   → GREAT_LUCK
-   → 첫 번째 쿠폰
+  /* =====================================================
+     광땡
+  ===================================================== */
 
-   추후 실제 45개 조합표로 교체하면 됩니다.
+  '3-8': '38_GWANG_DDAENG',
+  '1-8': '18_GWANG_DDAENG',
+  '1-3': '13_GWANG_DDAENG',
+
+
+  /* =====================================================
+     특수 족보
+  ===================================================== */
+
+  '1-2': 'ALI',
+  '1-4': 'DOKSA',
+  '1-9': 'GUBBING',
+  '1-10': 'JANGBBING',
+  '4-10': 'JANGSA',
+  '4-6': 'SSERYUK',
+
+
+  /* =====================================================
+     갑오
+  ===================================================== */
+
+  '2-7': 'GABO',
+  '3-6': 'GABO',
+  '4-5': 'GABO',
+  '9-10': 'GABO',
+
+
+  /* =====================================================
+     8끗
+  ===================================================== */
+
+  '1-7': '8_KKEUT',
+  '2-6': '8_KKEUT',
+  '3-5': '8_KKEUT',
+  '8-10': '8_KKEUT',
+
+
+  /* =====================================================
+     7끗
+  ===================================================== */
+
+  '1-6': '7_KKEUT',
+  '2-5': '7_KKEUT',
+  '3-4': '7_KKEUT',
+  '7-10': '7_KKEUT',
+  '8-9': '7_KKEUT',
+
+
+  /* =====================================================
+     6끗
+  ===================================================== */
+
+  '1-5': '6_KKEUT',
+  '2-4': '6_KKEUT',
+  '6-10': '6_KKEUT',
+  '7-9': '6_KKEUT',
+
+
+  /* =====================================================
+     5끗
+  ===================================================== */
+
+  '2-3': '5_KKEUT',
+  '5-10': '5_KKEUT',
+  '6-9': '5_KKEUT',
+  '7-8': '5_KKEUT',
+
+
+  /* =====================================================
+     4끗
+  ===================================================== */
+
+  '5-9': '4_KKEUT',
+  '6-8': '4_KKEUT',
+
+
+  /* =====================================================
+     3끗
+  ===================================================== */
+
+  '3-10': '3_KKEUT',
+  '4-9': '3_KKEUT',
+  '5-8': '3_KKEUT',
+  '6-7': '3_KKEUT',
+
+
+  /* =====================================================
+     2끗
+  ===================================================== */
+
+  '2-10': '2_KKEUT',
+  '3-9': '2_KKEUT',
+  '4-8': '2_KKEUT',
+  '5-7': '2_KKEUT',
+
+
+  /* =====================================================
+     1끗
+  ===================================================== */
+
+  '2-9': '1_KKEUT',
+  '4-7': '1_KKEUT',
+  '5-6': '1_KKEUT',
+
+
+  /* =====================================================
+     망통
+  ===================================================== */
+
+  '2-8': 'MANGTONG',
+  '3-7': 'MANGTONG'
+
+};
+
+
+
+/* =========================================================
+   msg - 족보별 혜택 설정
+
+   ★ 나중에 여기만 수정하시면 됩니다.
+
+   name
+   → 결과 팝업에 보이는 족보명
+
+   description
+   → 결과 설명/운세 문구
+
+   benefit
+   → 실제 혜택 문구
+
+   couponNo
+   → 실제 Cafe24 쿠폰번호
+========================================================= */
+
+const msgResultSettings = {
+
+  '38_GWANG_DDAENG': {
+    name: '38광땡',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '18_GWANG_DDAENG': {
+    name: '18광땡',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '13_GWANG_DDAENG': {
+    name: '13광땡',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'ALI': {
+    name: '알리',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'DOKSA': {
+    name: '독사',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'GUBBING': {
+    name: '구삥',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'JANGBBING': {
+    name: '장삥',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'JANGSA': {
+    name: '장사',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'SSERYUK': {
+    name: '세륙',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'GABO': {
+    name: '갑오',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '8_KKEUT': {
+    name: '8끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '7_KKEUT': {
+    name: '7끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '6_KKEUT': {
+    name: '6끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '5_KKEUT': {
+    name: '5끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '4_KKEUT': {
+    name: '4끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '3_KKEUT': {
+    name: '3끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '2_KKEUT': {
+    name: '2끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  '1_KKEUT': {
+    name: '1끗',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  },
+
+  'MANGTONG': {
+    name: '망통',
+    description: '',
+    benefit: '',
+    couponNo: msgDefaultCouponNo
+  }
+
+};
+
+
+
+/* =========================================================
+   msg - 카드 조합 결과 판정
 ========================================================= */
 
 function msgGetCardResult(
@@ -46,74 +332,63 @@ function msgGetCardResult(
     `${msgFirst}-${msgSecond}`;
 
 
-  /* =====================================================
-     테스트 특수조합
+  const msgResultCode =
+    msgCombinationMap[
+      msgCombinationKey
+    ];
 
-     3 + 8은 무조건 대길
-  ===================================================== */
 
-  if (
-    msgCombinationKey === '3-8'
-  ) {
+  if (!msgResultCode) {
 
-    return {
-      code: 'GREAT_LUCK',
-      name: '대길',
-      couponNo:
-        '6085943114800000356'
-    };
+    throw new Error(
+      `INVALID_CARD_COMBINATION: ${msgCombinationKey}`
+    );
   }
 
 
-
-  /* =====================================================
-     나머지 조합 테스트 분배
-
-     합계를 3으로 나눈 나머지로
-     대길 / 중길 / 소길 테스트
-  ===================================================== */
-
-  const msgRemainder =
-    (msgFirst + msgSecond) % 3;
+  const msgResultSetting =
+    msgResultSettings[
+      msgResultCode
+    ];
 
 
+  if (!msgResultSetting) {
 
-  if (msgRemainder === 2) {
-
-    return {
-      code: 'GREAT_LUCK',
-      name: '대길',
-      couponNo:
-        '6085943114800000356'
-    };
+    throw new Error(
+      `RESULT_SETTING_NOT_FOUND: ${msgResultCode}`
+    );
   }
-
-
-
-  if (msgRemainder === 0) {
-
-    return {
-      code: 'MIDDLE_LUCK',
-      name: '중길',
-      couponNo:
-        '6085943764400000357'
-    };
-  }
-
 
 
   return {
-    code: 'SMALL_LUCK',
-    name: '소길',
+
+    code:
+      msgResultCode,
+
+    name:
+      msgResultSetting.name,
+
+    description:
+      msgResultSetting.description,
+
+    benefit:
+      msgResultSetting.benefit,
+
     couponNo:
-      '6085943765000000358'
+      msgResultSetting.couponNo,
+
+    card1:
+      msgFirst,
+
+    card2:
+      msgSecond
   };
 }
 
 
 
 /* =========================================================
-   msg - 관리자 Access Token 갱신
+   msg - Cafe24 관리자 Access Token 갱신
 ========================================================= */
 
 async function msgRefreshAdminToken({
@@ -128,7 +403,6 @@ async function msgRefreshAdminToken({
     Buffer.from(
       `${msgClientId}:${msgClientSecret}`
     ).toString('base64');
-
 
 
   const msgRefreshResponse =
@@ -160,10 +434,8 @@ async function msgRefreshAdminToken({
     );
 
 
-
   const msgRefreshData =
     await msgRefreshResponse.json();
-
 
 
   if (!msgRefreshResponse.ok) {
@@ -179,7 +451,6 @@ async function msgRefreshAdminToken({
   }
 
 
-
   if (
     !msgRefreshData.access_token ||
     !msgRefreshData.refresh_token
@@ -190,11 +461,6 @@ async function msgRefreshAdminToken({
     );
   }
 
-
-
-  /* =====================================================
-     새 관리자 토큰 Supabase 저장
-  ===================================================== */
 
   const {
     error: msgTokenUpdateError
@@ -226,7 +492,6 @@ async function msgRefreshAdminToken({
     );
 
 
-
   if (msgTokenUpdateError) {
 
     console.error(
@@ -238,7 +503,6 @@ async function msgRefreshAdminToken({
       'ADMIN_TOKEN_DB_UPDATE_FAILED'
     );
   }
-
 
 
   return msgRefreshData;
@@ -305,7 +569,6 @@ async function msgIssueCoupon({
     );
 
 
-
   let msgCouponData;
 
 
@@ -320,7 +583,6 @@ async function msgIssueCoupon({
   }
 
 
-
   return {
     msgCouponResponse,
     msgCouponData
@@ -330,7 +592,7 @@ async function msgIssueCoupon({
 
 
 /* =========================================================
-   msg - selection 사용상태 원복
+   msg - selection used=false 원복
 ========================================================= */
 
 async function msgReleaseSelection({
@@ -376,7 +638,7 @@ export default async function handler(
   try {
 
     /* =====================================================
-       1. OAuth code + state 확인
+       1. OAuth code + selection state
     ===================================================== */
 
     const msgCode =
@@ -391,40 +653,26 @@ export default async function handler(
       ).trim();
 
 
-
     if (!msgCode) {
 
-      return msgRes.status(400).json({
-        success: false,
-        code: 'NO_AUTH_CODE',
-        message: '회원 인증 코드가 없습니다.'
-      });
+      return msgRes.redirect(
+        302,
+        `${msgEventPageUrl}?msg_status=auth_error`
+      );
     }
-
-
-
-    if (!msgSelectionId) {
-
-      return msgRes.status(400).json({
-        success: false,
-        code: 'NO_SELECTION_STATE',
-        message: '카드 선택 정보가 없습니다.'
-      });
-    }
-
 
 
     if (
+      !msgSelectionId ||
       !/^[a-f0-9]{48}$/i.test(
         msgSelectionId
       )
     ) {
 
-      return msgRes.status(400).json({
-        success: false,
-        code: 'INVALID_SELECTION_STATE',
-        message: '잘못된 카드 선택 정보입니다.'
-      });
+      return msgRes.redirect(
+        302,
+        `${msgEventPageUrl}?msg_status=selection_error`
+      );
     }
 
 
@@ -457,7 +705,6 @@ export default async function handler(
       process.env.SUPABASE_SECRET_KEY;
 
 
-
     if (
       !msgClientId ||
       !msgClientSecret ||
@@ -467,11 +714,10 @@ export default async function handler(
       !msgSupabaseSecretKey
     ) {
 
-      return msgRes.status(500).json({
-        success: false,
-        code: 'ENV_ERROR',
-        message: '서버 환경변수가 부족합니다.'
-      });
+      return msgRes.redirect(
+        302,
+        `${msgEventPageUrl}?msg_status=server_error`
+      );
     }
 
 
@@ -502,7 +748,7 @@ export default async function handler(
 
 
     /* =====================================================
-       4. selection 조회
+       4. 선택정보 조회
     ===================================================== */
 
     const {
@@ -529,34 +775,28 @@ export default async function handler(
       .maybeSingle();
 
 
-
     if (
       msgSelectionError ||
       !msgSelection
     ) {
 
       console.error(
-        'msg callback selection error:',
+        'msg selection error:',
         msgSelectionError
       );
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=selection_error`
       );
     }
 
 
-
     if (msgSelection.used) {
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=used`
       );
     }
@@ -564,16 +804,45 @@ export default async function handler(
 
 
     /* =====================================================
-       5. Customer Access Token
+       5. 방금 선택한 카드 족보 계산
+    ===================================================== */
+
+    const msgResult =
+      msgGetCardResult(
+        msgSelection.card_1,
+        msgSelection.card_2
+      );
+
+
+    const msgResultCode =
+      msgResult.code;
+
+
+    const msgResultName =
+      msgResult.name;
+
+
+    const msgResultDescription =
+      msgResult.description;
+
+
+    const msgResultBenefit =
+      msgResult.benefit;
+
+
+    const msgCouponNo =
+      msgResult.couponNo;
+
+
+
+    /* =====================================================
+       6. Customer Access Token 발급
     ===================================================== */
 
     const msgCustomerBasicAuth =
       Buffer.from(
-
         `${msgClientId}:${msgClientSecret}`
-
       ).toString('base64');
-
 
 
     const msgTokenResponse =
@@ -608,10 +877,8 @@ export default async function handler(
       );
 
 
-
     const msgTokenData =
       await msgTokenResponse.json();
-
 
 
     if (!msgTokenResponse.ok) {
@@ -623,9 +890,7 @@ export default async function handler(
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=auth_error`
       );
     }
@@ -633,20 +898,17 @@ export default async function handler(
 
 
     /* =====================================================
-       6. 실제 Cafe24 member_id
+       7. 실제 Cafe24 회원 ID
     ===================================================== */
 
     const msgMemberId =
       msgTokenData.user_id;
 
 
-
     if (!msgMemberId) {
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=auth_error`
       );
     }
@@ -654,7 +916,7 @@ export default async function handler(
 
 
     /* =====================================================
-       7. Customer Identifier
+       8. 회원 고유식별자
     ===================================================== */
 
     const msgIdentifierResponse =
@@ -666,7 +928,6 @@ export default async function handler(
           method: 'GET',
 
           headers: {
-
             Authorization:
               `Basic ${msgTokenData.access_token}`
           }
@@ -674,10 +935,8 @@ export default async function handler(
       );
 
 
-
     const msgIdentifierData =
       await msgIdentifierResponse.json();
-
 
 
     if (!msgIdentifierResponse.ok) {
@@ -689,13 +948,10 @@ export default async function handler(
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=auth_error`
       );
     }
-
 
 
     const msgUserIdentifier =
@@ -710,13 +966,10 @@ export default async function handler(
         ?.shop_no || 1;
 
 
-
     if (!msgUserIdentifier) {
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=auth_error`
       );
     }
@@ -724,7 +977,7 @@ export default async function handler(
 
 
     /* =====================================================
-       8. 이미 참여했는지 확인
+       9. 기존 참여 여부
     ===================================================== */
 
     const {
@@ -735,7 +988,7 @@ export default async function handler(
       .from('msg_event_participants')
 
       .select(
-        'id, status, result_code, coupon_no'
+        'id, status, result_code, coupon_no, participated_at'
       )
 
       .eq(
@@ -751,143 +1004,126 @@ export default async function handler(
       .maybeSingle();
 
 
-
     if (msgParticipantSelectError) {
 
       console.error(
-        'msg participant lookup error:',
+        'msg participant select error:',
         msgParticipantSelectError
       );
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=server_error`
       );
     }
 
 
 
-/* =====================================================
-   msg - 이미 참여한 회원
-
-   쿠폰은 추가 발급하지 않지만
-   이번에 선택한 패의 결과는 보여줍니다.
-===================================================== */
-
-if (msgExistingParticipant) {
-
-  /* ===============================
-     이번 선택 카드로 족보 계산
-  =============================== */
-
-  const msgAlreadyResult =
-    msgGetCardResult(
-      msgSelection.card_1,
-      msgSelection.card_2
-    );
-
-
-  /* ===============================
-     이번 selection 사용 완료 처리
-  =============================== */
-
-  await msgSupabase
-
-    .from('msg_event_selections')
-
-    .update({
-      used: true
-    })
-
-    .eq(
-      'selection_id',
-      msgSelectionId
-    );
-
-
-  /* ===============================
-     이벤트페이지 복귀 URL
-  =============================== */
-
-  const msgAlreadyRedirectUrl =
-    new URL(
-      msgEventPageUrl
-    );
-
-
-  msgAlreadyRedirectUrl.searchParams.set(
-    'msg_status',
-    'already'
-  );
-
-
-  msgAlreadyRedirectUrl.searchParams.set(
-    'msg_result',
-    msgAlreadyResult.code
-  );
-
-
-  msgAlreadyRedirectUrl.searchParams.set(
-    'msg_result_name',
-    msgAlreadyResult.name
-  );
-
-
-  msgAlreadyRedirectUrl.searchParams.set(
-    'msg_card1',
-    String(
-      msgSelection.card_1
-    )
-  );
-
-
-  msgAlreadyRedirectUrl.searchParams.set(
-    'msg_card2',
-    String(
-      msgSelection.card_2
-    )
-  );
-
-
-  return msgRes.redirect(
-    302,
-    msgAlreadyRedirectUrl.toString()
-  );
-}
-
-
-
     /* =====================================================
-       9. 선택한 카드 조합 결과 계산
+       10. 이미 참여한 회원
+
+       쿠폰 재발급 X
+
+       하지만 방금 뽑은 카드와
+       이번 족보 결과는 보여줍니다.
     ===================================================== */
 
-    const msgResult =
-      msgGetCardResult(
+    if (msgExistingParticipant) {
 
-        msgSelection.card_1,
+      const {
+        error: msgAlreadySelectionError
+      } = await msgSupabase
 
-        msgSelection.card_2
+        .from('msg_event_selections')
+
+        .update({
+          used: true
+        })
+
+        .eq(
+          'selection_id',
+          msgSelectionId
+        );
+
+
+      if (msgAlreadySelectionError) {
+
+        console.error(
+          'msg already selection update error:',
+          msgAlreadySelectionError
+        );
+      }
+
+
+      const msgAlreadyRedirectUrl =
+        new URL(
+          msgEventPageUrl
+        );
+
+
+      msgAlreadyRedirectUrl.searchParams.set(
+        'msg_status',
+        'already'
       );
 
 
-    const msgResultCode =
-      msgResult.code;
+      msgAlreadyRedirectUrl.searchParams.set(
+        'msg_result',
+        msgResultCode
+      );
 
 
-    const msgResultName =
-      msgResult.name;
+      msgAlreadyRedirectUrl.searchParams.set(
+        'msg_result_name',
+        msgResultName
+      );
 
 
-    const msgCouponNo =
-      msgResult.couponNo;
+      msgAlreadyRedirectUrl.searchParams.set(
+        'msg_card1',
+        String(
+          msgResult.card1
+        )
+      );
+
+
+      msgAlreadyRedirectUrl.searchParams.set(
+        'msg_card2',
+        String(
+          msgResult.card2
+        )
+      );
+
+
+      if (msgResultDescription) {
+
+        msgAlreadyRedirectUrl.searchParams.set(
+          'msg_description',
+          msgResultDescription
+        );
+      }
+
+
+      if (msgResultBenefit) {
+
+        msgAlreadyRedirectUrl.searchParams.set(
+          'msg_benefit',
+          msgResultBenefit
+        );
+      }
+
+
+      return msgRes.redirect(
+        302,
+        msgAlreadyRedirectUrl.toString()
+      );
+    }
 
 
 
     /* =====================================================
-       10. 참여 PROCESSING 기록
+       11. 최초 참여 PROCESSING 기록
     ===================================================== */
 
     const {
@@ -928,18 +1164,51 @@ if (msgExistingParticipant) {
       .single();
 
 
-
     if (msgInsertError) {
 
       if (
         msgInsertError.code === '23505'
       ) {
 
+        const msgDuplicateRedirectUrl =
+          new URL(
+            msgEventPageUrl
+          );
+
+
+        msgDuplicateRedirectUrl.searchParams.set(
+          'msg_status',
+          'already'
+        );
+
+
+        msgDuplicateRedirectUrl.searchParams.set(
+          'msg_result',
+          msgResultCode
+        );
+
+
+        msgDuplicateRedirectUrl.searchParams.set(
+          'msg_result_name',
+          msgResultName
+        );
+
+
+        msgDuplicateRedirectUrl.searchParams.set(
+          'msg_card1',
+          String(msgResult.card1)
+        );
+
+
+        msgDuplicateRedirectUrl.searchParams.set(
+          'msg_card2',
+          String(msgResult.card2)
+        );
+
+
         return msgRes.redirect(
-
           302,
-
-          `${msgEventPageUrl}?msg_status=already`
+          msgDuplicateRedirectUrl.toString()
         );
       }
 
@@ -951,9 +1220,7 @@ if (msgExistingParticipant) {
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=server_error`
       );
     }
@@ -961,9 +1228,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       11. selection 사용 처리
-
-       used=false인 경우에만 true로 변경
+       12. selection 사용 처리
     ===================================================== */
 
     const {
@@ -992,7 +1257,6 @@ if (msgExistingParticipant) {
       )
 
       .maybeSingle();
-
 
 
     if (
@@ -1029,9 +1293,7 @@ if (msgExistingParticipant) {
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=selection_error`
       );
     }
@@ -1039,7 +1301,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       12. Cafe24 관리자 토큰
+       13. 관리자 토큰 조회
     ===================================================== */
 
     const {
@@ -1064,7 +1326,6 @@ if (msgExistingParticipant) {
       )
 
       .single();
-
 
 
     if (
@@ -1101,9 +1362,7 @@ if (msgExistingParticipant) {
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=server_error`
       );
     }
@@ -1111,12 +1370,11 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       13. 관리자 Access Token 만료 확인
+       14. 관리자 토큰 만료 확인
     ===================================================== */
 
     let msgAdminAccessToken =
       msgCafe24Token.access_token;
-
 
 
     const msgExpiresAt =
@@ -1127,7 +1385,6 @@ if (msgExistingParticipant) {
           ).getTime()
 
         : null;
-
 
 
     const msgShouldRefresh =
@@ -1141,7 +1398,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       14. 필요하면 관리자 토큰 갱신
+       15. 필요하면 관리자 토큰 갱신
     ===================================================== */
 
     if (msgShouldRefresh) {
@@ -1162,7 +1419,6 @@ if (msgExistingParticipant) {
 
             msgSupabase
           });
-
 
 
         msgAdminAccessToken =
@@ -1206,9 +1462,7 @@ if (msgExistingParticipant) {
 
 
         return msgRes.redirect(
-
           302,
-
           `${msgEventPageUrl}?msg_status=server_error`
         );
       }
@@ -1217,7 +1471,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       15. 쿠폰 1차 발급
+       16. 쿠폰 발급 1차
     ===================================================== */
 
     let {
@@ -1240,7 +1494,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       16. 401이면 Refresh 후 딱 1회 재시도
+       17. 401 → 토큰갱신 후 1회 재시도
     ===================================================== */
 
     if (
@@ -1268,7 +1522,6 @@ if (msgExistingParticipant) {
           .single();
 
 
-
         if (
           msgLatestTokenError ||
           !msgLatestToken?.refresh_token
@@ -1278,7 +1531,6 @@ if (msgExistingParticipant) {
             'LATEST_REFRESH_TOKEN_NOT_FOUND'
           );
         }
-
 
 
         const msgRefreshedToken =
@@ -1297,10 +1549,8 @@ if (msgExistingParticipant) {
           });
 
 
-
         msgAdminAccessToken =
           msgRefreshedToken.access_token;
-
 
 
         const msgRetryResult =
@@ -1317,7 +1567,6 @@ if (msgExistingParticipant) {
 
             msgShopNo
           });
-
 
 
         msgCouponResponse =
@@ -1340,7 +1589,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       17. 쿠폰 발급 실패
+       18. 쿠폰 발급 실패
     ===================================================== */
 
     if (!msgCouponResponse.ok) {
@@ -1388,9 +1637,7 @@ if (msgExistingParticipant) {
 
 
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=coupon_error`
       );
     }
@@ -1398,7 +1645,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       18. 쿠폰 성공 → participant 완료
+       19. 쿠폰 성공 → participant 완료
     ===================================================== */
 
     const {
@@ -1431,14 +1678,7 @@ if (msgExistingParticipant) {
       );
 
 
-
     if (msgParticipantUpdateError) {
-
-      /*
-       * 중요:
-       * 쿠폰 자체는 이미 발급된 상태이므로
-       * 여기서는 selection을 false로 돌리지 않습니다.
-       */
 
       console.error(
         'msg participant update error:',
@@ -1446,10 +1686,13 @@ if (msgExistingParticipant) {
       );
 
 
+      /*
+       * 쿠폰 자체는 이미 발급됐으므로
+       * selection을 false로 되돌리지 않습니다.
+       */
+
       return msgRes.redirect(
-
         302,
-
         `${msgEventPageUrl}?msg_status=db_update_error`
       );
     }
@@ -1457,7 +1700,7 @@ if (msgExistingParticipant) {
 
 
     /* =====================================================
-       19. 성공 → 실제 이벤트 페이지 복귀
+       20. 성공 → 결과페이지 복귀
     ===================================================== */
 
     const msgRedirectUrl =
@@ -1473,23 +1716,55 @@ if (msgExistingParticipant) {
 
 
     msgRedirectUrl.searchParams.set(
-    'msg_card1',
-    String(msgSelection.card_1)
+      'msg_result',
+      msgResultCode
     );
 
 
     msgRedirectUrl.searchParams.set(
-    'msg_card2',
-    String(msgSelection.card_2)
+      'msg_result_name',
+      msgResultName
     );
 
+
+    msgRedirectUrl.searchParams.set(
+      'msg_card1',
+      String(
+        msgResult.card1
+      )
+    );
+
+
+    msgRedirectUrl.searchParams.set(
+      'msg_card2',
+      String(
+        msgResult.card2
+      )
+    );
+
+
+    if (msgResultDescription) {
+
+      msgRedirectUrl.searchParams.set(
+        'msg_description',
+        msgResultDescription
+      );
+    }
+
+
+    if (msgResultBenefit) {
+
+      msgRedirectUrl.searchParams.set(
+        'msg_benefit',
+        msgResultBenefit
+      );
+    }
 
 
     return msgRes.redirect(
       302,
       msgRedirectUrl.toString()
     );
-
 
 
   } catch (msgError) {
@@ -1501,9 +1776,7 @@ if (msgExistingParticipant) {
 
 
     return msgRes.redirect(
-
       302,
-
       `${msgEventPageUrl}?msg_status=server_error`
     );
   }
