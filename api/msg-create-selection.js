@@ -26,7 +26,7 @@ export default async function handler(
 
 
     /* =========================================================
-       msg - CORS 설정
+       msg - CORS
     ========================================================= */
 
     msgRes.setHeader(
@@ -55,10 +55,13 @@ export default async function handler(
 
 
     /* =========================================================
-       msg - OPTIONS 사전 요청
+       msg - OPTIONS
     ========================================================= */
 
-    if (msgReq.method === 'OPTIONS') {
+    if (
+        msgReq.method ===
+        'OPTIONS'
+    ) {
 
         return msgRes
             .status(204)
@@ -75,7 +78,10 @@ export default async function handler(
            1. POST만 허용
         ===================================================== */
 
-        if (msgReq.method !== 'POST') {
+        if (
+            msgReq.method !==
+            'POST'
+        ) {
 
             return msgRes.status(405).json({
 
@@ -117,17 +123,7 @@ export default async function handler(
         ) {
 
             console.error(
-                'msg create selection env error',
-                {
-                    supabaseUrl:
-                        Boolean(msgSupabaseUrl),
-
-                    supabaseSecretKey:
-                        Boolean(msgSupabaseSecretKey),
-
-                    clientId:
-                        Boolean(msgClientId)
-                }
+                'msg create selection env error'
             );
 
 
@@ -148,35 +144,45 @@ export default async function handler(
 
 
         /* =====================================================
-           3. 카드 선택값
+           3. 프론트에서 전달받은 값
+
+           실제 카드번호가 아니라
+
+           round_id
+           position_1
+           position_2
+
+           만 받습니다.
         ===================================================== */
 
-        const msgCard1 =
+        const msgRoundId =
+            String(
+                msgReq.body?.round_id || ''
+            ).trim();
+
+
+        const msgPosition1 =
             Number(
-                msgReq.body?.card_1
+                msgReq.body?.position_1
             );
 
 
-        const msgCard2 =
+        const msgPosition2 =
             Number(
-                msgReq.body?.card_2
+                msgReq.body?.position_2
             );
 
 
 
         /* =====================================================
-           4. 카드값 검증
+           4. round_id 검증
         ===================================================== */
 
         if (
-            !Number.isInteger(msgCard1) ||
-            !Number.isInteger(msgCard2) ||
-
-            msgCard1 < 1 ||
-            msgCard1 > 10 ||
-
-            msgCard2 < 1 ||
-            msgCard2 > 10
+            !msgRoundId ||
+            !/^[a-f0-9]{48}$/i.test(
+                msgRoundId
+            )
         ) {
 
             return msgRes.status(400).json({
@@ -184,10 +190,10 @@ export default async function handler(
                 success: false,
 
                 code:
-                    'INVALID_CARD',
+                    'INVALID_ROUND',
 
                 message:
-                    '올바른 카드를 선택해주세요.'
+                    '유효하지 않은 카드 라운드입니다.'
 
             });
 
@@ -196,11 +202,25 @@ export default async function handler(
 
 
         /* =====================================================
-           5. 같은 카드 선택 방지
+           5. 카드 위치 검증
+
+           위치는 1~10
         ===================================================== */
 
         if (
-            msgCard1 === msgCard2
+            !Number.isInteger(
+                msgPosition1
+            ) ||
+
+            !Number.isInteger(
+                msgPosition2
+            ) ||
+
+            msgPosition1 < 1 ||
+            msgPosition1 > 10 ||
+
+            msgPosition2 < 1 ||
+            msgPosition2 > 10
         ) {
 
             return msgRes.status(400).json({
@@ -208,7 +228,32 @@ export default async function handler(
                 success: false,
 
                 code:
-                    'SAME_CARD',
+                    'INVALID_POSITION',
+
+                message:
+                    '올바른 카드 위치를 선택해주세요.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           6. 같은 위치 선택 방지
+        ===================================================== */
+
+        if (
+            msgPosition1 ===
+            msgPosition2
+        ) {
+
+            return msgRes.status(400).json({
+
+                success: false,
+
+                code:
+                    'SAME_POSITION',
 
                 message:
                     '서로 다른 카드 2장을 선택해주세요.'
@@ -220,47 +265,10 @@ export default async function handler(
 
 
         /* =====================================================
-           6. 작은 번호부터 정렬
-
-           8 + 3
-           ↓
-           3 + 8
-        ===================================================== */
-
-        const [
-            msgSortedCard1,
-            msgSortedCard2
-
-        ] = [
-
-            msgCard1,
-            msgCard2
-
-        ].sort(
-            (a, b) =>
-                a - b
-        );
-
-
-
-        /* =====================================================
-           7. Selection ID 생성
-        ===================================================== */
-
-        const msgSelectionId =
-
-            crypto
-                .randomBytes(24)
-                .toString('hex');
-
-
-
-        /* =====================================================
-           8. Supabase 연결
+           7. Supabase 연결
         ===================================================== */
 
         const msgSupabase =
-
             createClient(
 
                 msgSupabaseUrl,
@@ -284,7 +292,270 @@ export default async function handler(
 
 
         /* =====================================================
-           9. 선택정보 저장
+           8. 서버에 저장된 라운드 조회
+        ===================================================== */
+
+        const {
+            data: msgRound,
+            error: msgRoundError
+
+        } = await msgSupabase
+
+            .from(
+                'msg_event_rounds'
+            )
+
+            .select(
+                'round_id, event_code, card_order, used, expires_at'
+            )
+
+            .eq(
+                'round_id',
+                msgRoundId
+            )
+
+            .eq(
+                'event_code',
+                msgEventCode
+            )
+
+            .maybeSingle();
+
+
+
+        if (
+            msgRoundError ||
+            !msgRound
+        ) {
+
+            console.error(
+                'msg round lookup error:',
+                msgRoundError
+            );
+
+
+            return msgRes.status(400).json({
+
+                success: false,
+
+                code:
+                    'ROUND_NOT_FOUND',
+
+                message:
+                    '카드 라운드를 찾을 수 없습니다.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           9. 이미 사용한 라운드인지 확인
+        ===================================================== */
+
+        if (
+            msgRound.used === true
+        ) {
+
+            return msgRes.status(409).json({
+
+                success: false,
+
+                code:
+                    'ROUND_ALREADY_USED',
+
+                message:
+                    '이미 사용한 카드 라운드입니다.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           10. 라운드 만료 확인
+        ===================================================== */
+
+        const msgExpiresAt =
+            new Date(
+                msgRound.expires_at
+            ).getTime();
+
+
+        if (
+            !Number.isFinite(
+                msgExpiresAt
+            ) ||
+
+            msgExpiresAt <=
+            Date.now()
+        ) {
+
+            return msgRes.status(410).json({
+
+                success: false,
+
+                code:
+                    'ROUND_EXPIRED',
+
+                message:
+                    '카드 선택 시간이 만료되었습니다. 다시 시도해주세요.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           11. card_order 검증
+        ===================================================== */
+
+        const msgCardOrder =
+            msgRound.card_order;
+
+
+        if (
+            !Array.isArray(
+                msgCardOrder
+            ) ||
+
+            msgCardOrder.length !==
+            10
+        ) {
+
+            console.error(
+                'msg invalid card order:',
+                msgCardOrder
+            );
+
+
+            return msgRes.status(500).json({
+
+                success: false,
+
+                code:
+                    'INVALID_CARD_ORDER',
+
+                message:
+                    '카드 구성 오류가 발생했습니다.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           12. 실제 카드번호 계산
+
+           position은 1부터 시작
+           배열 index는 0부터 시작
+        ===================================================== */
+
+        const msgCard1 =
+            Number(
+                msgCardOrder[
+                    msgPosition1 - 1
+                ]
+            );
+
+
+        const msgCard2 =
+            Number(
+                msgCardOrder[
+                    msgPosition2 - 1
+                ]
+            );
+
+
+
+        /* =====================================================
+           13. 서버 내부 카드값 재검증
+        ===================================================== */
+
+        if (
+            !Number.isInteger(
+                msgCard1
+            ) ||
+
+            !Number.isInteger(
+                msgCard2
+            ) ||
+
+            msgCard1 < 1 ||
+            msgCard1 > 10 ||
+
+            msgCard2 < 1 ||
+            msgCard2 > 10 ||
+
+            msgCard1 ===
+            msgCard2
+        ) {
+
+            console.error(
+                'msg resolved card error:',
+                {
+                    msgCard1,
+                    msgCard2,
+                    msgPosition1,
+                    msgPosition2
+                }
+            );
+
+
+            return msgRes.status(500).json({
+
+                success: false,
+
+                code:
+                    'CARD_RESOLVE_ERROR',
+
+                message:
+                    '카드 판정 오류가 발생했습니다.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           14. 카드번호 정렬
+        ===================================================== */
+
+        const [
+            msgSortedCard1,
+            msgSortedCard2
+
+        ] = [
+
+            msgCard1,
+            msgCard2
+
+        ].sort(
+            (a, b) =>
+                a - b
+        );
+
+
+
+        /* =====================================================
+           15. Selection ID 생성
+        ===================================================== */
+
+        const msgSelectionId =
+
+            crypto
+                .randomBytes(24)
+                .toString('hex');
+
+
+
+        /* =====================================================
+           16. selection 저장
         ===================================================== */
 
         const {
@@ -317,18 +588,16 @@ export default async function handler(
             })
 
             .select(
-                'id, selection_id, card_1, card_2'
+                'id, selection_id'
             )
 
             .single();
 
 
 
-        /* =====================================================
-           10. DB 저장 실패
-        ===================================================== */
-
-        if (msgInsertError) {
+        if (
+            msgInsertError
+        ) {
 
             console.error(
                 'msg selection insert error:',
@@ -344,17 +613,7 @@ export default async function handler(
                     'DB_ERROR',
 
                 message:
-                    '선택 정보 저장에 실패했습니다.',
-
-                error: {
-
-                    code:
-                        msgInsertError.code || null,
-
-                    message:
-                        msgInsertError.message || null
-
-                }
+                    '선택 정보 저장에 실패했습니다.'
 
             });
 
@@ -363,18 +622,96 @@ export default async function handler(
 
 
         /* =====================================================
-           11. Cafe24 Customer OAuth URL 직접 생성
+           17. 라운드 사용 처리
 
-           기존에는:
-           create-selection
-           → customer-auth
-           → Cafe24
+           브라우저가 같은 round_id를 반복 제출하지 못하도록
+           selection 생성 후 사용 완료 처리
+        ===================================================== */
 
-           이제는:
-           create-selection
-           → Cafe24
+        const {
+            data: msgUsedRound,
+            error: msgRoundUseError
 
-           로 바로 이동합니다.
+        } = await msgSupabase
+
+            .from(
+                'msg_event_rounds'
+            )
+
+            .update({
+
+                used:
+                    true
+
+            })
+
+            .eq(
+                'round_id',
+                msgRoundId
+            )
+
+            .eq(
+                'used',
+                false
+            )
+
+            .select(
+                'round_id, used'
+            )
+
+            .maybeSingle();
+
+
+
+        if (
+            msgRoundUseError ||
+            !msgUsedRound
+        ) {
+
+            console.error(
+                'msg round use error:',
+                msgRoundUseError
+            );
+
+
+            /*
+             * selection은 만들어졌지만
+             * round 선점이 실패했으므로
+             * 해당 selection 삭제
+             */
+
+            await msgSupabase
+
+                .from(
+                    'msg_event_selections'
+                )
+
+                .delete()
+
+                .eq(
+                    'selection_id',
+                    msgSelectionId
+                );
+
+
+            return msgRes.status(409).json({
+
+                success: false,
+
+                code:
+                    'ROUND_ALREADY_USED',
+
+                message:
+                    '이미 처리된 카드 라운드입니다.'
+
+            });
+
+        }
+
+
+
+        /* =====================================================
+           18. Cafe24 OAuth URL
         ===================================================== */
 
         const msgAuthorizeUrl =
@@ -406,50 +743,41 @@ export default async function handler(
 
 
         /* =====================================================
-           12. 로그
+           19. 로그
+
+           실제 카드값은 서버 로그에서만 확인 가능
         ===================================================== */
 
         console.log(
-            'msg ========================================'
-        );
+            'msg secure selection created:',
+            {
+                roundId:
+                    msgRoundId,
 
+                position1:
+                    msgPosition1,
 
-        console.log(
-            'msg SELECTION CREATED'
-        );
+                position2:
+                    msgPosition2,
 
+                card1:
+                    msgSortedCard1,
 
-        console.log(
-            'msg selection id:',
-            msgSelectionId
-        );
+                card2:
+                    msgSortedCard2,
 
-
-        console.log(
-            'msg cards:',
-            msgSortedCard1,
-            msgSortedCard2
-        );
-
-
-        console.log(
-            'msg DIRECT OAUTH URL:',
-            msgAuthorizeUrl
-        );
-
-
-        console.log(
-            'msg ========================================'
+                selectionId:
+                    msgSelectionId
+            }
         );
 
 
 
         /* =====================================================
-           13. 성공
+           20. 응답
 
            중요:
-           next_url이 더 이상 msg-customer-auth가 아니라
-           Cafe24 OAuth 주소입니다.
+           card_1 / card_2는 브라우저에 반환하지 않습니다.
         ===================================================== */
 
         return msgRes.status(200).json({
@@ -459,17 +787,8 @@ export default async function handler(
             code:
                 'SELECTION_CREATED',
 
-            message:
-                '카드 선택 정보가 저장되었습니다.',
-
             selection_id:
-                msgSelectionId,
-
-            card_1:
-                msgSortedCard1,
-
-            card_2:
-                msgSortedCard2,
+                msgSelectionData.selection_id,
 
             next_url:
                 msgAuthorizeUrl
@@ -495,10 +814,7 @@ export default async function handler(
                 'SERVER_ERROR',
 
             message:
-                '서버 오류가 발생했습니다.',
-
-            error:
-                msgError?.message || null
+                '서버 오류가 발생했습니다.'
 
         });
 
