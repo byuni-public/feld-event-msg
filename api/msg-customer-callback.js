@@ -27,17 +27,20 @@ const msgDefaultCouponNo =
 
 
 /* =========================================================
-   msg - 45개 전체 족보 조합
+   msg - 45개 전체 족보
 ========================================================= */
 
 const msgCombinationMap = {
 
     /* 광땡 */
+
     '3-8': '38_GWANG_DDAENG',
     '1-8': '18_GWANG_DDAENG',
     '1-3': '13_GWANG_DDAENG',
 
+
     /* 특수 족보 */
+
     '1-2': 'ALI',
     '1-4': 'DOKSA',
     '1-9': 'GUBBING',
@@ -45,59 +48,79 @@ const msgCombinationMap = {
     '4-10': 'JANGSA',
     '4-6': 'SSERYUK',
 
+
     /* 갑오 */
+
     '2-7': 'GABO',
     '3-6': 'GABO',
     '4-5': 'GABO',
     '9-10': 'GABO',
 
+
     /* 8끗 */
+
     '1-7': '8_KKEUT',
     '2-6': '8_KKEUT',
     '3-5': '8_KKEUT',
     '8-10': '8_KKEUT',
 
+
     /* 7끗 */
+
     '1-6': '7_KKEUT',
     '2-5': '7_KKEUT',
     '3-4': '7_KKEUT',
     '7-10': '7_KKEUT',
     '8-9': '7_KKEUT',
 
+
     /* 6끗 */
+
     '1-5': '6_KKEUT',
     '2-4': '6_KKEUT',
     '6-10': '6_KKEUT',
     '7-9': '6_KKEUT',
 
+
     /* 5끗 */
+
     '2-3': '5_KKEUT',
     '5-10': '5_KKEUT',
     '6-9': '5_KKEUT',
     '7-8': '5_KKEUT',
 
+
     /* 4끗 */
+
     '5-9': '4_KKEUT',
     '6-8': '4_KKEUT',
 
+
     /* 3끗 */
+
     '3-10': '3_KKEUT',
     '4-9': '3_KKEUT',
     '5-8': '3_KKEUT',
     '6-7': '3_KKEUT',
 
+
     /* 2끗 */
+
     '2-10': '2_KKEUT',
     '3-9': '2_KKEUT',
     '4-8': '2_KKEUT',
     '5-7': '2_KKEUT',
 
+
     /* 1끗 */
+
     '2-9': '1_KKEUT',
     '4-7': '1_KKEUT',
     '5-6': '1_KKEUT',
 
+
     /* 망통 */
+
     '2-8': 'MANGTONG',
     '3-7': 'MANGTONG'
 
@@ -106,7 +129,7 @@ const msgCombinationMap = {
 
 
 /* =========================================================
-   msg - 족보별 결과 / 혜택
+   msg - 족보별 혜택
 ========================================================= */
 
 const msgResultSettings = {
@@ -278,7 +301,9 @@ function msgGetCardResult(
         ];
 
 
-    if (!msgResultCode) {
+    if (
+        !msgResultCode
+    ) {
 
         throw new Error(
             `INVALID_CARD_COMBINATION: ${msgCombinationKey}`
@@ -292,7 +317,9 @@ function msgGetCardResult(
         ];
 
 
-    if (!msgResultSetting) {
+    if (
+        !msgResultSetting
+    ) {
 
         throw new Error(
             `RESULT_SETTING_NOT_FOUND: ${msgResultCode}`
@@ -322,13 +349,14 @@ function msgGetCardResult(
 
         card2:
             msgSecond
+
     };
 }
 
 
 
 /* =========================================================
-   msg - 결과 Redirect URL 생성
+   msg - 결과 URL 생성
 ========================================================= */
 
 function msgMakeResultUrl({
@@ -385,6 +413,7 @@ function msgMakeResultUrl({
             'msg_description',
             msgResult.description
         );
+
     }
 
 
@@ -397,6 +426,7 @@ function msgMakeResultUrl({
             'msg_benefit',
             msgResult.benefit
         );
+
     }
 
 
@@ -441,6 +471,7 @@ async function msgRefreshAdminToken({
 
                     'Content-Type':
                         'application/x-www-form-urlencoded'
+
                 },
 
                 body:
@@ -451,13 +482,27 @@ async function msgRefreshAdminToken({
 
                         refresh_token:
                             msgRefreshToken
+
                     })
+
             }
+
         );
 
 
-    const msgRefreshData =
-        await msgRefreshResponse.json();
+    let msgRefreshData;
+
+
+    try {
+
+        msgRefreshData =
+            await msgRefreshResponse.json();
+
+    } catch {
+
+        msgRefreshData = {};
+
+    }
 
 
     if (
@@ -473,6 +518,7 @@ async function msgRefreshAdminToken({
         throw new Error(
             'ADMIN_TOKEN_REFRESH_FAILED'
         );
+
     }
 
 
@@ -484,6 +530,7 @@ async function msgRefreshAdminToken({
         throw new Error(
             'ADMIN_TOKEN_REFRESH_INVALID'
         );
+
     }
 
 
@@ -511,6 +558,7 @@ async function msgRefreshAdminToken({
 
             updated_at:
                 new Date().toISOString()
+
         })
 
         .eq(
@@ -532,6 +580,7 @@ async function msgRefreshAdminToken({
         throw new Error(
             'ADMIN_TOKEN_DB_UPDATE_FAILED'
         );
+
     }
 
 
@@ -541,7 +590,7 @@ async function msgRefreshAdminToken({
 
 
 /* =========================================================
-   msg - 쿠폰 발급
+   msg - Cafe24 쿠폰 발급
 ========================================================= */
 
 async function msgIssueCoupon({
@@ -571,6 +620,7 @@ async function msgIssueCoupon({
 
                     'X-Cafe24-Api-Version':
                         '2026-03-01'
+
                 },
 
                 body:
@@ -595,9 +645,13 @@ async function msgIssueCoupon({
 
                             send_sms_for_issue:
                                 'F'
+
                         }
+
                     })
+
             }
+
         );
 
 
@@ -612,12 +666,15 @@ async function msgIssueCoupon({
     } catch {
 
         msgCouponData = {};
+
     }
 
 
     return {
+
         msgCouponResponse,
         msgCouponData
+
     };
 }
 
@@ -656,6 +713,7 @@ async function msgReleaseSelection({
             'msg release selection error:',
             msgError
         );
+
     }
 }
 
@@ -685,6 +743,7 @@ async function msgMarkParticipantFailed({
 
             updated_at:
                 new Date().toISOString()
+
         };
 
 
@@ -694,6 +753,7 @@ async function msgMarkParticipantFailed({
 
             msgUpdateData.result_code =
                 msgResultCode;
+
         }
 
 
@@ -703,6 +763,7 @@ async function msgMarkParticipantFailed({
 
             msgUpdateData.coupon_no =
                 msgCouponNo;
+
         }
 
 
@@ -728,6 +789,7 @@ async function msgMarkParticipantFailed({
             'msg participant failed update error:',
             msgError
         );
+
     }
 }
 
@@ -761,13 +823,15 @@ export default async function handler(
             ).trim();
 
 
-
-        if (!msgCode) {
+        if (
+            !msgCode
+        ) {
 
             return msgRes.redirect(
                 302,
                 `${msgEventPageUrl}?msg_status=auth_error`
             );
+
         }
 
 
@@ -782,6 +846,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=selection_error`
             );
+
         }
 
 
@@ -823,6 +888,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=server_error`
             );
+
         }
 
 
@@ -846,8 +912,10 @@ export default async function handler(
 
                         autoRefreshToken:
                             false
+
                     }
                 }
+
             );
 
 
@@ -856,9 +924,7 @@ export default async function handler(
            4. 속도 개선
 
            selection 조회와
-           Customer Access Token 발급은
-           서로 직접적인 의존관계가 없으므로
-           동시에 시작합니다.
+           Customer Access Token 발급을 동시에 실행
         ===================================================== */
 
         const msgSelectionPromise =
@@ -911,6 +977,7 @@ export default async function handler(
 
                         'Content-Type':
                             'application/x-www-form-urlencoded'
+
                     },
 
                     body:
@@ -924,8 +991,11 @@ export default async function handler(
 
                             redirect_uri:
                                 msgCustomerRedirectUri
+
                         })
+
                 }
+
             );
 
 
@@ -944,7 +1014,7 @@ export default async function handler(
 
 
         /* =====================================================
-           5. selection 검증
+           5. selection 확인
         ===================================================== */
 
         const msgSelection =
@@ -971,6 +1041,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=selection_error`
             );
+
         }
 
 
@@ -982,6 +1053,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=used`
             );
+
         }
 
 
@@ -1007,7 +1079,7 @@ export default async function handler(
 
 
         /* =====================================================
-           7. Customer Token 검증
+           7. Customer Token 확인
         ===================================================== */
 
         let msgTokenData;
@@ -1021,6 +1093,7 @@ export default async function handler(
         } catch {
 
             msgTokenData = {};
+
         }
 
 
@@ -1038,6 +1111,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=auth_error`
             );
+
         }
 
 
@@ -1055,12 +1129,13 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=auth_error`
             );
+
         }
 
 
 
         /* =====================================================
-           8. 회원 고유식별자 조회
+           8. Cafe24 회원 고유식별자
         ===================================================== */
 
         const msgIdentifierResponse =
@@ -1076,8 +1151,11 @@ export default async function handler(
 
                         Authorization:
                             `Basic ${msgTokenData.access_token}`
+
                     }
+
                 }
+
             );
 
 
@@ -1092,6 +1170,7 @@ export default async function handler(
         } catch {
 
             msgIdentifierData = {};
+
         }
 
 
@@ -1110,6 +1189,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=auth_error`
             );
+
         }
 
 
@@ -1135,42 +1215,152 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=auth_error`
             );
+
         }
 
 
 
         /* =====================================================
-           9. 기존 참여 여부
+           9. 플레이 기록 + 기존 참여여부를 동시에 처리
 
-           반복 플레이는 허용합니다.
-           쿠폰만 최초 1회입니다.
+           플레이 기록은 매번 남깁니다.
+
+           첫 참여든,
+           이미 참여한 사람이 다시 뽑든,
+           모두 msg_event_plays에 기록됩니다.
         ===================================================== */
 
-        const {
-            data: msgExistingParticipant,
-            error: msgParticipantSelectError
+        const msgParticipantSelectPromise =
 
-        } = await msgSupabase
+            msgSupabase
 
-            .from(
-                'msg_event_participants'
-            )
+                .from(
+                    'msg_event_participants'
+                )
 
-            .select(
-                'id, status, result_code, coupon_no, participated_at'
-            )
+                .select(
+                    `
+                    id,
+                    status,
+                    result_code,
+                    coupon_no,
+                    cafe24_user_id,
+                    participated_at
+                    `
+                )
 
-            .eq(
-                'event_code',
-                msgEventCode
-            )
+                .eq(
+                    'event_code',
+                    msgEventCode
+                )
 
-            .eq(
-                'member_id',
-                msgUserIdentifier
-            )
+                .eq(
+                    'member_id',
+                    msgUserIdentifier
+                )
 
-            .maybeSingle();
+                .maybeSingle();
+
+
+
+        const msgPlayInsertPromise =
+
+            msgSupabase
+
+                .from(
+                    'msg_event_plays'
+                )
+
+                .insert({
+
+                    event_code:
+                        msgEventCode,
+
+                    cafe24_user_id:
+                        msgMemberId,
+
+                    user_identifier:
+                        msgUserIdentifier,
+
+                    selection_id:
+                        msgSelectionId,
+
+                    card_1:
+                        msgResult.card1,
+
+                    card_2:
+                        msgResult.card2,
+
+                    result_code:
+                        msgResult.code,
+
+                    result_name:
+                        msgResult.name,
+
+                    coupon_no:
+                        msgCouponNo,
+
+                    coupon_issued:
+                        false,
+
+                    played_at:
+                        new Date().toISOString()
+
+                })
+
+                .select(
+                    'id, selection_id'
+                )
+
+                .single();
+
+
+
+        const [
+            msgParticipantSelectResult,
+            msgPlayInsertResult
+
+        ] = await Promise.all([
+
+            msgParticipantSelectPromise,
+            msgPlayInsertPromise
+
+        ]);
+
+
+
+        const msgExistingParticipant =
+            msgParticipantSelectResult.data;
+
+
+        const msgParticipantSelectError =
+            msgParticipantSelectResult.error;
+
+
+        const msgPlayRecord =
+            msgPlayInsertResult.data;
+
+
+        const msgPlayInsertError =
+            msgPlayInsertResult.error;
+
+
+
+        if (
+            msgPlayInsertError
+        ) {
+
+            /*
+             * 플레이 기록 오류 때문에
+             * 실제 이벤트 참여를 막지는 않습니다.
+             */
+
+            console.error(
+                'msg play record insert error:',
+                msgPlayInsertError
+            );
+
+        }
 
 
 
@@ -1188,6 +1378,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=server_error`
             );
+
         }
 
 
@@ -1195,9 +1386,9 @@ export default async function handler(
         /* =====================================================
            10. 이미 참여한 회원
 
-           카드 선택은 계속 가능
-           족보도 계속 표시
-           쿠폰만 재발급하지 않음
+           쿠폰 X
+           새 카드 결과 O
+           플레이 기록 O
         ===================================================== */
 
         if (
@@ -1236,6 +1427,7 @@ export default async function handler(
                     'msg already selection update error:',
                     msgAlreadySelectionError
                 );
+
             }
 
 
@@ -1250,8 +1442,10 @@ export default async function handler(
 
                     msgIncludeBenefit:
                         false
+
                 })
             );
+
         }
 
 
@@ -1259,9 +1453,8 @@ export default async function handler(
         /* =====================================================
            11. 신규 참여
 
-           속도 개선:
            participant INSERT와
-           관리자 토큰 조회를 동시에 처리합니다.
+           관리자 토큰 조회를 동시에 실행
         ===================================================== */
 
         const msgNow =
@@ -1285,6 +1478,9 @@ export default async function handler(
                     member_id:
                         msgUserIdentifier,
 
+                    cafe24_user_id:
+                        msgMemberId,
+
                     result_code:
                         msgResultCode,
 
@@ -1299,6 +1495,7 @@ export default async function handler(
 
                     updated_at:
                         msgNow
+
                 })
 
                 .select(
@@ -1358,10 +1555,7 @@ export default async function handler(
 
 
         /* =====================================================
-           12. 중복 INSERT 발생
-
-           다른 요청이 먼저 참여자로 등록했다면
-           쿠폰을 다시 주지 않고 이번 결과만 보여줍니다.
+           12. 동시에 다른 요청이 먼저 참여 처리
         ===================================================== */
 
         if (
@@ -1400,8 +1594,10 @@ export default async function handler(
 
                         msgIncludeBenefit:
                             false
+
                     })
                 );
+
             }
 
 
@@ -1415,6 +1611,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=server_error`
             );
+
         }
 
 
@@ -1475,6 +1672,7 @@ export default async function handler(
 
                 msgErrorMessage:
                     'Selection claim failed'
+
             });
 
 
@@ -1482,12 +1680,13 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=selection_error`
             );
+
         }
 
 
 
         /* =====================================================
-           14. 병렬로 미리 조회한 관리자 토큰 확인
+           14. 관리자 토큰 확인
         ===================================================== */
 
         const msgCafe24Token =
@@ -1526,6 +1725,7 @@ export default async function handler(
 
                     msgErrorMessage:
                         'Admin token not found'
+
                 })
 
             ]);
@@ -1535,6 +1735,7 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=server_error`
             );
+
         }
 
 
@@ -1572,7 +1773,7 @@ export default async function handler(
 
 
         /* =====================================================
-           16. 관리자 토큰 필요시 갱신
+           16. 필요하면 관리자 토큰 갱신
         ===================================================== */
 
         if (
@@ -1594,6 +1795,7 @@ export default async function handler(
                             msgCafe24Token.refresh_token,
 
                         msgSupabase
+
                     });
 
 
@@ -1625,6 +1827,7 @@ export default async function handler(
 
                         msgErrorMessage:
                             'Admin token refresh failed'
+
                     })
 
                 ]);
@@ -1634,7 +1837,9 @@ export default async function handler(
                     302,
                     `${msgEventPageUrl}?msg_status=server_error`
                 );
+
             }
+
         }
 
 
@@ -1659,12 +1864,13 @@ export default async function handler(
             msgMemberId,
 
             msgShopNo
+
         });
 
 
 
         /* =====================================================
-           18. 401일 경우 토큰 갱신 후 딱 1회 재시도
+           18. 401 → 토큰갱신 후 1회 재시도
         ===================================================== */
 
         if (
@@ -1673,12 +1879,6 @@ export default async function handler(
         ) {
 
             try {
-
-                /*
-                 * 다른 요청에서 토큰을 먼저
-                 * 갱신했을 가능성이 있으므로
-                 * 최신 refresh_token을 다시 확인합니다.
-                 */
 
                 const {
                     data: msgLatestToken,
@@ -1712,6 +1912,7 @@ export default async function handler(
                     throw new Error(
                         'LATEST_REFRESH_TOKEN_NOT_FOUND'
                     );
+
                 }
 
 
@@ -1729,6 +1930,7 @@ export default async function handler(
                             msgLatestToken.refresh_token,
 
                         msgSupabase
+
                     });
 
 
@@ -1750,6 +1952,7 @@ export default async function handler(
                         msgMemberId,
 
                         msgShopNo
+
                     });
 
 
@@ -1768,13 +1971,18 @@ export default async function handler(
                     'msg coupon retry error:',
                     msgRetryError
                 );
+
             }
+
         }
 
 
 
         /* =====================================================
            19. 쿠폰 발급 실패
+
+           play 기록은 남지만
+           coupon_issued = false
         ===================================================== */
 
         if (
@@ -1809,6 +2017,7 @@ export default async function handler(
                     msgResultCode,
 
                     msgCouponNo
+
                 })
 
             ]);
@@ -1818,45 +2027,106 @@ export default async function handler(
                 302,
                 `${msgEventPageUrl}?msg_status=coupon_error`
             );
+
         }
 
 
 
         /* =====================================================
-           20. 쿠폰 성공 → 참여완료
+           20. 쿠폰 성공
+
+           participant 완료 +
+           play의 coupon_issued=true
+
+           동시에 처리해서 속도 손실 최소화
         ===================================================== */
 
-        const {
-            error: msgParticipantUpdateError
+        const [
+            msgParticipantUpdateResult,
+            msgPlayUpdateResult
 
-        } = await msgSupabase
+        ] = await Promise.all([
 
-            .from(
-                'msg_event_participants'
-            )
+            msgSupabase
 
-            .update({
+                .from(
+                    'msg_event_participants'
+                )
 
-                status:
-                    'ISSUED',
+                .update({
 
-                result_code:
-                    msgResultCode,
+                    status:
+                        'ISSUED',
 
-                coupon_no:
-                    msgCouponNo,
+                    result_code:
+                        msgResultCode,
 
-                error_message:
-                    null,
+                    coupon_no:
+                        msgCouponNo,
 
-                updated_at:
-                    new Date().toISOString()
-            })
+                    cafe24_user_id:
+                        msgMemberId,
 
-            .eq(
-                'id',
-                msgNewParticipant.id
+                    error_message:
+                        null,
+
+                    updated_at:
+                        new Date().toISOString()
+
+                })
+
+                .eq(
+                    'id',
+                    msgNewParticipant.id
+                ),
+
+
+            msgSupabase
+
+                .from(
+                    'msg_event_plays'
+                )
+
+                .update({
+
+                    coupon_issued:
+                        true
+
+                })
+
+                .eq(
+                    'selection_id',
+                    msgSelectionId
+                )
+
+        ]);
+
+
+
+        const msgParticipantUpdateError =
+            msgParticipantUpdateResult.error;
+
+
+        const msgPlayUpdateError =
+            msgPlayUpdateResult.error;
+
+
+
+        if (
+            msgPlayUpdateError
+        ) {
+
+            /*
+             * 쿠폰과 실제 이벤트 처리는 성공했으므로
+             * 플레이 로그 업데이트 오류만 기록합니다.
+             */
+
+            console.error(
+                'msg play coupon update error:',
+                msgPlayUpdateError
             );
+
+        }
 
 
 
@@ -1871,18 +2141,15 @@ export default async function handler(
 
 
             /*
-             * 중요:
-             * 쿠폰은 이미 발급되었습니다.
-             *
-             * 따라서 selection을
-             * false로 되돌리지 않습니다.
-             * 쿠폰도 다시 발급하지 않습니다.
+             * 쿠폰은 이미 발급됨.
+             * 절대 재발급하면 안 됨.
              */
 
             return msgRes.redirect(
                 302,
                 `${msgEventPageUrl}?msg_status=db_update_error`
             );
+
         }
 
 
@@ -1902,6 +2169,7 @@ export default async function handler(
 
                 msgIncludeBenefit:
                     true
+
             })
         );
 
@@ -1919,6 +2187,7 @@ export default async function handler(
             302,
             `${msgEventPageUrl}?msg_status=server_error`
         );
+
     }
 
 }
