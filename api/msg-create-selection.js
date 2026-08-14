@@ -576,6 +576,9 @@ export default async function handler(
                 event_code:
                     msgEventCode,
 
+                round_id:
+                    msgRoundId,
+
                 card_1:
                     msgSortedCard1,
 
