@@ -357,11 +357,15 @@ function msgGetCardResult(
 
 /* =========================================================
    msg - 결과 URL 생성
+
+   결과가 확정된 뒤 전체 패 공개를 위해
+   msg_selection_id도 함께 전달
 ========================================================= */
 
 function msgMakeResultUrl({
     msgStatus,
     msgResult,
+    msgSelectionId = '',
     msgIncludeBenefit = true
 }) {
 
@@ -403,6 +407,22 @@ function msgMakeResultUrl({
             msgResult.card2
         )
     );
+
+
+    /*
+     * 전체 카드 공개 API에 사용할 selection_id
+     */
+
+    if (
+        msgSelectionId
+    ) {
+
+        msgRedirectUrl.searchParams.set(
+            'msg_selection_id',
+            msgSelectionId
+        );
+
+    }
 
 
     if (
@@ -936,7 +956,7 @@ export default async function handler(
                 )
 
                 .select(
-                    'selection_id, event_code, card_1, card_2, used, created_at'
+                    'selection_id, event_code, round_id, card_1, card_2, used, created_at'
                 )
 
                 .eq(
@@ -1222,12 +1242,6 @@ export default async function handler(
 
         /* =====================================================
            9. 플레이 기록 + 기존 참여여부를 동시에 처리
-
-           플레이 기록은 매번 남깁니다.
-
-           첫 참여든,
-           이미 참여한 사람이 다시 뽑든,
-           모두 msg_event_plays에 기록됩니다.
         ===================================================== */
 
         const msgParticipantSelectPromise =
@@ -1337,10 +1351,6 @@ export default async function handler(
             msgParticipantSelectResult.error;
 
 
-        const msgPlayRecord =
-            msgPlayInsertResult.data;
-
-
         const msgPlayInsertError =
             msgPlayInsertResult.error;
 
@@ -1349,11 +1359,6 @@ export default async function handler(
         if (
             msgPlayInsertError
         ) {
-
-            /*
-             * 플레이 기록 오류 때문에
-             * 실제 이벤트 참여를 막지는 않습니다.
-             */
 
             console.error(
                 'msg play record insert error:',
@@ -1388,7 +1393,7 @@ export default async function handler(
 
            쿠폰 X
            새 카드 결과 O
-           플레이 기록 O
+           전체 패 공개 O
         ===================================================== */
 
         if (
@@ -1440,6 +1445,8 @@ export default async function handler(
 
                     msgResult,
 
+                    msgSelectionId,
+
                     msgIncludeBenefit:
                         false
 
@@ -1452,9 +1459,6 @@ export default async function handler(
 
         /* =====================================================
            11. 신규 참여
-
-           participant INSERT와
-           관리자 토큰 조회를 동시에 실행
         ===================================================== */
 
         const msgNow =
@@ -1591,6 +1595,8 @@ export default async function handler(
                             'already',
 
                         msgResult,
+
+                        msgSelectionId,
 
                         msgIncludeBenefit:
                             false
@@ -1980,9 +1986,6 @@ export default async function handler(
 
         /* =====================================================
            19. 쿠폰 발급 실패
-
-           play 기록은 남지만
-           coupon_issued = false
         ===================================================== */
 
         if (
@@ -2034,11 +2037,6 @@ export default async function handler(
 
         /* =====================================================
            20. 쿠폰 성공
-
-           participant 완료 +
-           play의 coupon_issued=true
-
-           동시에 처리해서 속도 손실 최소화
         ===================================================== */
 
         const [
@@ -2116,11 +2114,6 @@ export default async function handler(
             msgPlayUpdateError
         ) {
 
-            /*
-             * 쿠폰과 실제 이벤트 처리는 성공했으므로
-             * 플레이 로그 업데이트 오류만 기록합니다.
-             */
-
             console.error(
                 'msg play coupon update error:',
                 msgPlayUpdateError
@@ -2140,11 +2133,6 @@ export default async function handler(
             );
 
 
-            /*
-             * 쿠폰은 이미 발급됨.
-             * 절대 재발급하면 안 됨.
-             */
-
             return msgRes.redirect(
                 302,
                 `${msgEventPageUrl}?msg_status=db_update_error`
@@ -2156,6 +2144,8 @@ export default async function handler(
 
         /* =====================================================
            21. 성공
+
+           selection_id도 결과페이지로 전달
         ===================================================== */
 
         return msgRes.redirect(
@@ -2166,6 +2156,8 @@ export default async function handler(
                     'success',
 
                 msgResult,
+
+                msgSelectionId,
 
                 msgIncludeBenefit:
                     true
