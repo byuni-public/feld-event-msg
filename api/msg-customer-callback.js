@@ -143,71 +143,71 @@ const msgResultSettings = {
 
     '18_GWANG_DDAENG': {
         name: '18광땡',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     '13_GWANG_DDAENG': {
         name: '13광땡',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'ALI': {
         name: '알리',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'DOKSA': {
         name: '독사',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'GUBBING': {
         name: '구삥',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'JANGBBING': {
         name: '장삥',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'JANGSA': {
         name: '장사',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'SSERYUK': {
         name: '세륙',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     'GABO': {
         name: '갑오',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
     '8_KKEUT': {
         name: '8끗',
-        description: '',
-        benefit: '',
+        description: '임시텍스트',
+        benefit: '임시텍스트',
         couponNo: msgDefaultCouponNo
     },
 
