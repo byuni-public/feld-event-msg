@@ -135,9 +135,9 @@ const msgCombinationMap = {
 const msgResultSettings = {
 
     '38_GWANG_DDAENG': {
-        name: '38광땡',
-        description: '',
-        benefit: '',
+        name: '회복대광(回福大光)',
+        description: '봄 벚꽃의 온화한 기운과 가을 보름달 같은 풍성한 수분 보습이 만나, 민감함은 잠재우고 꽉 찬 수분 광채를 선사하는 최고 등급의 피부 천운입니다.',
+        benefit: '전 제품 30% 할인',
         couponNo: msgDefaultCouponNo
     },
 
