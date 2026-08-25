@@ -10,7 +10,7 @@ const msgEventCode =
 
 
 const msgEventPageUrl =
-    'https://feld.co.kr/msg/26chuseok.html';
+    'https://feld.co.kr/event/26chuseok/detail.html';
 
 
 const msgCustomerRedirectUri =
