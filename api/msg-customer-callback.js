@@ -326,6 +326,8 @@ function msgGetCardResult(
     }
 
 
+    
+
     return {
 
         code:
