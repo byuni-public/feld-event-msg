@@ -22,7 +22,7 @@ const msgCustomerRedirectUri =
  */
 
 const msgDefaultCouponNo =
-    '6086011268300000362';
+    '';
 
 
 
